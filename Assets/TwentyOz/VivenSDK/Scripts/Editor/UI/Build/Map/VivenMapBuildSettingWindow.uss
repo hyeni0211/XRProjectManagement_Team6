@@ -1,0 +1,342 @@
+/* Viven Map Build Setting Window 스타일 */
+
+:root {
+    --window-padding: 15px;
+    --section-min-width: 640px;
+    --content-min-width: 620px;
+}
+
+.unity-scroll-view {
+    flex-grow: 1;
+    min-width: var(--section-min-width);
+    padding-left: var(--window-padding);
+    padding-right: var(--window-padding);
+    padding-top: var(--window-padding);
+    padding-bottom: var(--window-padding);
+}
+
+/* 스크롤뷰가 찌그러지지 않도록 최소 크기 설정 */
+.unity-scroller {
+    min-width: 15px;
+}
+
+/* 헤더 스타일 */
+.header {
+    font-size: 16px;
+    margin: 10px 0;
+    -unity-font-style: bold;
+    /*min-width: var(--section-min-width);*/
+    min-width: 640px;
+    -unity-text-align: middle-center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* 섹션 스타일 */
+.section {
+    margin: 10px 0;
+    padding: 10px;
+    border-width: 1px;
+    border-radius: 3px;
+    border-color: rgb(100, 100, 100);
+    background-color: rgba(60, 60, 60, 0.1);
+    min-width: var(--content-min-width);
+}
+
+/* 일반 버튼 스타일 */
+.normal-button {
+    height: 30px;
+    margin: 10px 0;
+    border-radius: 3px;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+.normal-button:hover {
+    background-color: rgb(80, 80, 80);
+}
+
+.normal-button:active {
+    background-color: rgb(60, 60, 60);
+}
+
+/* 중요 빌드 버튼 스타일 */
+.primary-build-button {
+    width: 200px;
+    height: 30px;
+    margin: 10px 0;
+    background-color: rgb(80, 130, 180);
+    color: white;
+    border-radius: 3px;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+.primary-build-button:hover {
+    background-color: rgb(100, 150, 200);
+}
+
+.primary-build-button:active {
+    background-color: rgb(60, 110, 160);
+}
+
+/* 기존 빌드 버튼 스타일 (하위 호환성을 위해 유지) */
+.build-button {
+    height: 28px;
+    margin: 10px 0;
+    border-radius: 3px;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+/* 플랫폼 카드 스타일 */
+.platform-card {
+    margin: 5px 0;
+    padding: 10px;
+    border-width: 1px;
+    border-radius: 3px;
+    border-color: rgb(80, 80, 80);
+    min-width: var(--content-min-width);
+}
+
+/* 툴바 공통 스타일 */
+.unity-toolbar {
+    height: 40px;
+    min-width: var(--section-min-width);
+    margin-bottom: 10px;
+    border-width: 1px;
+    border-color: rgb(80, 80, 80);
+    background-color: rgb(60, 60, 60);
+}
+
+/* 툴바 토글 스타일 */
+.toolbar-button {
+    padding: 5px 10px;
+    min-width: 200px;
+    min-height: 30px;
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: visible;
+    border-right-width: 1px;
+    border-color: rgb(80, 80, 80);
+}
+
+.toolbar-button > .unity-label {
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.toolbar-button:checked {
+    background-color: rgb(60, 110, 160);
+    color: white;
+}
+
+.toolbar-button:hover {
+    background-color: rgb(80, 80, 80);
+}
+
+/* 선택된 툴바 버튼 스타일 */
+.toolbar-button--selected {
+    background-color: #0078D4; /* Unity 에디터의 선택 색상과 유사한 파란색 */
+    color: white;
+}
+
+.toolbar-button--selected:hover {
+    background-color: #0078D4;
+}
+
+
+/* 폴드아웃 헤더 스타일 */
+.unity-foldout__toggle {
+    margin-top: 5px;
+    -unity-font-style: bold;
+    min-width: var(--content-min-width);
+}
+
+.unity-foldout__content {
+    margin-left: 15px;
+}
+
+/* Toggle 필드 스타일 */
+.unity-toggle > Label {
+    min-width: 100px;
+}
+
+/* 위험/경고 메시지 스타일 */
+.unity-help-box {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+/* Field 스타일 */
+.unity-base-field__label {
+    min-width: 120px;
+}
+
+.unity-base-field {
+    min-width: 300px;
+    margin: 5px 0;
+}
+
+/* 객체 필드 스타일 */
+.unity-object-field__selector {
+    min-width: 20px;
+}
+
+/* 버튼 컨테이너 스타일 */
+.button-container {
+    flex-direction: row;
+    margin-top: 10px;
+    min-width: var(--section-min-width);
+}
+
+/* 맵 유형 설정 컨테이너 스타일 */
+.map-type-settings {
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgba(100, 100, 100, 0.3);
+    background-color: rgba(50, 50, 50, 0.1);
+}
+
+/* 맵 유형 정보 라벨 스타일 */
+.map-type-info {
+    margin-bottom: 8px;
+    -unity-font-style: italic;
+    color: rgb(180, 180, 180);
+}
+
+/* 이미지 업로드 버튼 스타일 */
+.upload-button {
+    width: 200px;
+    margin-top: 8px;
+    align-self: flex-start;
+}
+
+/* 상태 라벨 스타일 */
+.status-label-success {
+    color: rgb(100, 200, 100);
+    margin-bottom: 5px;
+}
+
+.status-label-error {
+    color: rgb(200, 100, 100);
+    margin-bottom: 5px;
+}
+
+/* 추가 스타일 - 인라인 스타일 대체용 */
+.build-button-container {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    min-width: var(--section-min-width);
+}
+
+.manual-buttons-container {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    min-width: var(--section-min-width);
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.margin-right {
+    margin-right: 5px;
+}
+
+.margin-left {
+    margin-left: 5px;
+}
+
+.platform-icon-container {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.platform-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.platform-label {
+    width: 70px;
+    -unity-font-style: bold;
+    margin-right: 10px;
+}
+
+.platform-toggle {
+    margin-right: 10px;
+}
+
+.platform-scene-field {
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.row-container {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.manual-card-row {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.build-status-icon {
+    width: 16px;
+    height: 16px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.build-button {
+    width: 80px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.map-objects-header {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    -unity-font-style: bold;
+}
+
+.root-element {
+    min-width: 680px;
+}
+
+.main-scroll-view {
+    flex-grow: 1;
+    min-width: 660px;
+}
+
+.tab-content {
+    flex-grow: 1;
+    min-width: 640px;
+}
+
+.section-container {
+    margin-bottom: 10px;
+    min-width: 640px;
+}
+
+.config-section-container {
+    margin-bottom: 10px;
+    min-width: 640px;
+} 

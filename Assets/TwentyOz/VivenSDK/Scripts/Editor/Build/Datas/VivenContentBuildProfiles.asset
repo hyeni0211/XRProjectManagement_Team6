@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86fcaf4c16c44c2ba880d732d067688c, type: 3}
+  m_Name: VivenContentBuildProfiles
+  m_EditorClassIdentifier: 
+  windowBuildProfile: {fileID: 11400000, guid: 51c273d819feba14193bf10d7d2c343a, type: 2}
+  macBuildProfile: {fileID: 11400000, guid: 1f54288db4dd2ea47ad22778bd13798e, type: 2}
+  androidBuildProfile: {fileID: 11400000, guid: 21f7ad85e11487d4299a7bfd89c6d068, type: 2}
+  iosBuildProfile: {fileID: 11400000, guid: c5ea3f64f925aee4dbe3fef6a7d9ff95, type: 2}
+  webBuildProfile: {fileID: 11400000, guid: 65e58c70c1bb8c64c81e94008d57743b, type: 2}

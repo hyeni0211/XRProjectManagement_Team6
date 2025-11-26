@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 47ade918b6f6da247be4551282a625cc
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ViewDataDictionary: {instanceID: 0}
+  - vMapBuildSetting: {fileID: 11400000, guid: f384dee3d8dccee40b9601b210b47d67, type: 2}
+  - mVivenMapBuildData: {fileID: 11400000, guid: 769c6f58617973545873b0d73b82ae77, type: 2}
+  - mStyleSheet: {fileID: 7433441132597879392, guid: a38fd5030cf9bbc4e9522e6917286f91, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

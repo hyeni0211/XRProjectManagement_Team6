@@ -1,0 +1,26 @@
+{
+    "name": "Twoz.SDK.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:69448af7b92c7f342b298e06a37122aa",
+        "GUID:e43c72b580d22f44aaf001f7a77f8603",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:0a0471484b079be408cb3a0d7fe94736",
+        "GUID:aa6413b5f6eb0fc44bd2ef961292e2e7",
+        "GUID:f9fe0089ec81f4079af78eb2287a6163",
+        "GUID:e40ba710768534012815d3193fa296cb",
+        "GUID:4847341ff46394e83bb78fbd0652937e",
+        "GUID:96aa6ba065960476598f8f643e7252b6"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

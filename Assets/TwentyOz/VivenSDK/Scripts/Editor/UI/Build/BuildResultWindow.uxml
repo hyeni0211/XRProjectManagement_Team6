@@ -1,0 +1,58 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/UI/Build/BuildResultWindow.uss?fileID=7433441132597879392&amp;guid=427633461f47e3b4490fb57f00ceffdf&amp;type=3#BuildResultWindow" />
+    
+    <engine:VisualElement class="main-container">
+        <!-- 헤더 섹션 -->
+        <engine:VisualElement class="header-container">
+            <engine:Label text="빌드가 완료되었습니다." name="is-build-success" class="build-status-label" 
+                data-source="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/Build/Datas/BuildResultBinding.asset?fileID=11400000&amp;guid=b49e4e30ac3de32469b3868602c2798c&amp;type=2#BuildResultBinding" 
+                data-source-path="_buildSuccess" />
+        </engine:VisualElement>
+        
+        <!-- 정보 섹션 -->
+        <engine:VisualElement class="info-container">
+            <!-- 콘텐츠 이름 -->
+            <engine:TextField label="콘텐츠 이름" readonly="true" name="target-name" class="target-field"
+                data-source="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/Build/Datas/BuildResultBinding.asset?fileID=11400000&amp;guid=b49e4e30ac3de32469b3868602c2798c&amp;type=2#BuildResultBinding" 
+                data-source-path="_buildTarget">
+                <Bindings>
+                    <engine:DataBinding property="value" data-source-path="_buildTarget" 
+                        data-source="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/Build/Datas/BuildResultBinding.asset?fileID=11400000&amp;guid=b49e4e30ac3de32469b3868602c2798c&amp;type=2#BuildResultBinding" 
+                        binding-mode="ToTarget" />
+                </Bindings>
+            </engine:TextField>
+            
+            <!-- 빌드 완료 시간 -->
+            <engine:TextField label="빌드 완료 시간" readonly="true" name="build-time" class="target-field">
+            </engine:TextField>
+            
+            <!-- 빌드 소요 시간 -->
+            <engine:TextField label="빌드 소요 시간" readonly="true" name="build-duration" class="target-field">
+            </engine:TextField>
+            
+            <!-- 빌드 출력 경로 -->
+            <engine:TextField label="출력 경로" readonly="true" name="output-path" class="target-field">
+            </engine:TextField>
+        </engine:VisualElement>
+        
+        <!-- 메시지 섹션 -->
+        <engine:VisualElement class="message-container">
+            <engine:Label text="빌드 메시지" class="message-title" />
+            <engine:Label text="Label" name="build-message" class="message-content"
+                data-source="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/Build/Datas/BuildResultBinding.asset?fileID=11400000&amp;guid=b49e4e30ac3de32469b3868602c2798c&amp;type=2#BuildResultBinding" 
+                data-source-path="_buildMessage">
+                <Bindings>
+                    <engine:DataBinding property="text" 
+                        data-source="project://database/Assets/TwentyOz/VivenSDK/Scripts/Editor/Build/Datas/BuildResultBinding.asset?fileID=11400000&amp;guid=b49e4e30ac3de32469b3868602c2798c&amp;type=2#BuildResultBinding" 
+                        binding-mode="ToTarget" data-source-path="_buildMessage" />
+                </Bindings>
+            </engine:Label>
+        </engine:VisualElement>
+        
+        <!-- 버튼 섹션 -->
+        <engine:VisualElement class="button-container">
+            <engine:Button text="폴더 열기" name="open-folder-button" class="normal-button" />
+            <engine:Button text="닫기" name="close-button" class="close-button" />
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>
