@@ -6,6 +6,7 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools/
 /Assets/StreamingAssets/
+/[Ll]ogs/
 
 # Visual Studio / Rider
 .vs/
