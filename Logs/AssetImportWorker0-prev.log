@@ -1,0 +1,472 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.2/respin/6000.2.6f2-cc51a95c03' branch; Version is '6000.2.6f2 (4a4dcaec6541) revision 4869578'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-user" at "2025-12-07T08:55:04.8105644Z"
+OS: 'Windows 11  (10.0.26100) 64bit Core' Language: 'ko' Physical Memory: 65146 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+Date: 2025-12-07T08:55:04Z
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\2022.3.61f1\Editor\6000.2.6f2\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker0
+-projectPath
+C:/Users/user/Documents/GitHub/XRProjectManagement_Team6
+-logFile
+Logs/AssetImportWorker0.log
+-srvPort
+51438
+-licensingIpc
+LicenseClient-user
+-job-worker-count
+15
+-background-job-worker-count
+8
+-gc-helper-count
+1
+-name
+AssetImport
+Successfully changed project path to: C:/Users/user/Documents/GitHub/XRProjectManagement_Team6
+C:/Users/user/Documents/GitHub/XRProjectManagement_Team6
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+Player connection [29568]  Target information:
+
+Player connection [29568]  * "[IP] 192.168.0.29 [Port] 0 [Flags] 2 [Guid] 2715047937 [EditorId] 2715047937 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-ETHQ1FA) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [29568] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [29568] Host joined alternative multi-casting on [225.0.0.222:34997]...
+JobSystem: Creating JobQueue using job-worker-count value 15
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 30224, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.17.3+a4e98f1
+  Session Id:              3b1a1ab44c154f4c902bf613cdf3938e
+  Correlation Id:          34f7524ec1fcd5151049dfe004471940
+  External correlation Id: 8193579554885457883
+  Machine Id:              +zu9ZfrvCALOQQrnD+6vjVk4iDM=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-user" (connect: 0.00s, validation: 0.00s, handshake: 0.04s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-user-notifications" at "2025-12-07T08:55:04.8556928Z"
+[Licensing::Module] Licensing Background thread has ended after 0.05s
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 24.27 ms, found 13 plugins.
+Preloading 1 native plugins for Editor in 0.97 ms.
+Initialize engine version: 6000.2.6f2 (4a4dcaec6541)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/2022.3.61f1/Editor/6000.2.6f2/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/user/Documents/GitHub/XRProjectManagement_Team6/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+d3d12: failed to query info queue interface (0x80004002).
+Direct3D:
+    Version:         Direct3D 12 [level 12.1]
+    Renderer:        NVIDIA GeForce RTX 4060 Laptop GPU (ID=0x28e0)
+    Vendor:          NVIDIA
+    VRAM:            7957 MB
+    App VRAM Budget: 7189 MB
+    Driver:          32.0.15.5597
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/2022.3.61f1/Editor/6000.2.6f2/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/2022.3.61f1/Editor/6000.2.6f2/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/2022.3.61f1/Editor/6000.2.6f2/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56268
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/2022.3.61f1/Editor/6000.2.6f2/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001616 seconds.
+- Loaded All Assemblies, in  0.492 seconds
+Native extension for WindowsStandalone target not found
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.901 seconds
+Domain Reload Profiling: 1391ms
+	BeginReloadAssembly (163ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (1ms)
+	RebuildCommonClasses (49ms)
+	RebuildNativeTypeToScriptingClass (16ms)
+	initialDomainReloadingComplete (58ms)
+	LoadAllAssembliesAndSetupDomain (204ms)
+		LoadAssemblies (160ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (200ms)
+			TypeCache.Refresh (198ms)
+				TypeCache.ScanAssembly (182ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (901ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (818ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (68ms)
+			SetLoadedEditorAssemblies (5ms)
+			BeforeProcessingInitializeOnLoad (83ms)
+			ProcessInitializeOnLoadAttributes (172ms)
+			ProcessInitializeOnLoadMethodAttributes (490ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+========================================================================
+Worker process is ready to serve import requests
+Import Worker Mode flag is 0x00
+Begin MonoManager ReloadAssembly
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 14569391884388-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+- Loaded All Assemblies, in  1.450 seconds
+Refreshing native plugins compatible for Editor in 9.12 ms, found 13 plugins.
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at Unity.XR.Oculus.OculusLoader.AssetPathToAbsolutePath (System.String assetPath) [0x0003d] in .\Library\PackageCache\com.unity.xr.oculus@44578ba4bd45\Runtime\OculusLoader.cs:312 
+  at Unity.XR.Oculus.OculusLoader.EditorLoadOVRPlugin () [0x0008c] in .\Library\PackageCache\com.unity.xr.oculus@44578ba4bd45\Runtime\OculusLoader.cs:297 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <59bd7c40c082431db25e1e728ab62789>:0 
+   --- End of inner exception stack trace ---
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x00083] in <59bd7c40c082431db25e1e728ab62789>:0 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in <59bd7c40c082431db25e1e728ab62789>:0 
+  at UnityEditor.EditorAssemblies.ProcessInitializeOnLoadMethodAttributes () [0x00087] in <8081513dc2364383b8289d30d2169b2e>:0 
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogError (object)
+UnityEditor.EditorAssemblies:ProcessInitializeOnLoadMethodAttributes ()
+
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Team6 Project_Conveyor Belt
+Mono: successfully reloaded assembly
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+[Package Manager] Failed to launch server process. Reason: Unity was launched with the -noUpm command-line argument
+[Package Manager] Unable to send message (not connected to server process).
+[Package Manager] Cannot connect to Unity Package Manager local server
+- Finished resetting the current domain, in  2.763 seconds
+Domain Reload Profiling: 4205ms
+	BeginReloadAssembly (223ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (8ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (32ms)
+	RebuildCommonClasses (49ms)
+	RebuildNativeTypeToScriptingClass (16ms)
+	initialDomainReloadingComplete (62ms)
+	LoadAllAssembliesAndSetupDomain (1090ms)
+		LoadAssemblies (792ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (422ms)
+			TypeCache.Refresh (286ms)
+				TypeCache.ScanAssembly (263ms)
+			BuildScriptInfoCaches (112ms)
+			ResolveRequiredComponents (17ms)
+	FinalizeReload (2764ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (1761ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (3ms)
+			SetLoadedEditorAssemblies (6ms)
+			BeforeProcessingInitializeOnLoad (180ms)
+			ProcessInitializeOnLoadAttributes (1283ms)
+			ProcessInitializeOnLoadMethodAttributes (252ms)
+			AfterProcessingInitializeOnLoad (35ms)
+			EditorAssembliesLoaded (3ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (114ms)
+WARNING: Shader Unsupported: 'Hidden/Builtin_TerrainVisualization' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+WARNING: Shader Unsupported: 'Hidden/Builtin_TerrainVisualization' - All subshaders removed
+WARNING: Shader Did you use #pragma only_renderers and omit this platform?
+WARNING: Shader If subshaders removal was intentional, you may have forgotten turning Fallback off?
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.02 seconds
+Refreshing native plugins compatible for Editor in 10.46 ms, found 13 plugins.
+Preloading 1 native plugins for Editor in 0.10 ms.
+Unloading 28 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 8702 unused Assets / (5.9 MB). Loaded Objects now: 9511.
+Memory consumption went from 171.2 MB to 165.3 MB.
+Total: 11.726900 ms (FindLiveObjects: 0.886400 ms CreateObjectMapping: 0.761600 ms MarkObjects: 6.810700 ms  DeleteObjects: 3.266900 ms)
+
+========================================================================
+Received Import Request.
+  Time since last request: 278002.947497 seconds.
+  path: Assets/pingpong 1/source
+  artifactKey: Guid(b9e624051dfb3fd42a7f4a5b58622254) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/pingpong 1/source using Guid(b9e624051dfb3fd42a7f4a5b58622254) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '959dc5d9cce93ae8fc1f33eb7759dc9c') in 0.0086911 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 42.782631 seconds.
+  path: Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat/Ball2.mat
+  artifactKey: Guid(fcdd0a49cb82b874f9264db86d68f7d2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat/Ball2.mat using Guid(fcdd0a49cb82b874f9264db86d68f7d2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '969cb688d6fcb7d810a82a8b0277b513') in 0.3072725 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000025 seconds.
+  path: Assets/AddressableAssetsData/Windows/addressables_content_state.bin
+  artifactKey: Guid(2478cdd20bc3a90479860e06498463fd) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/AddressableAssetsData/Windows/addressables_content_state.bin using Guid(2478cdd20bc3a90479860e06498463fd) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'e5adb4471bd61f13a73fe6876efb1298') in 0.019209 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000028 seconds.
+  path: Assets/pingpong 1/source/Pingpong.blend
+  artifactKey: Guid(2ab15019fa4c6eb4cbca1731072aeeb1) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/pingpong 1/source/Pingpong.blend using Guid(2ab15019fa4c6eb4cbca1731072aeeb1) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'f6f1d72b64ad49a50627360b2b2a1c73') in 0.1045125 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 65
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000018 seconds.
+  path: Assets/PingPong/Scenes/Pingpong.unity
+  artifactKey: Guid(575373af9bd32f24cb5f58805368e9c2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/PingPong/Scenes/Pingpong.unity using Guid(575373af9bd32f24cb5f58805368e9c2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8d41d16b79189d25d407e65b746e365d') in 0.0269312 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 301.118759 seconds.
+  path: Assets/joola-rosskopf-table-tennis-racket-free/textures/racketLP_DefaultMaterial_Normal.png
+  artifactKey: Guid(351e39e82241c744f83ffa8dc9cf1a4b) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/joola-rosskopf-table-tennis-racket-free/textures/racketLP_DefaultMaterial_Normal.png using Guid(351e39e82241c744f83ffa8dc9cf1a4b) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '1405e525172d6049e62533bb0d89497d') in 0.0791281 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000034 seconds.
+  path: Assets/joola-rosskopf-table-tennis-racket-free/source/racketLP.fbx
+  artifactKey: Guid(b868243b1d6136e42bc1e60ccc5c27be) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/joola-rosskopf-table-tennis-racket-free/source/racketLP.fbx using Guid(b868243b1d6136e42bc1e60ccc5c27be) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'd5541727c758e747a6cf6bcfa13489e2') in 0.0341813 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 29
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/joola-rosskopf-table-tennis-racket-free/textures/racketLP_DefaultMaterial_BaseColor.png
+  artifactKey: Guid(2c49d90c3200cfb4899081eadd00967c) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/joola-rosskopf-table-tennis-racket-free/textures/racketLP_DefaultMaterial_BaseColor.png using Guid(2c49d90c3200cfb4899081eadd00967c) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '861519b7c8e44628c5e1a24306591a19') in 0.0366763 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 11.788691 seconds.
+  path: Assets/joola-rosskopf-table-tennis-racket-free/source
+  artifactKey: Guid(a868ec92520580c458ff429339d70fe5) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/joola-rosskopf-table-tennis-racket-free/source using Guid(a868ec92520580c458ff429339d70fe5) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '67a218a0a5f64152a58080bdfc40a85c') in 0.0010463 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 1.077219 seconds.
+  path: Assets/joola-rosskopf-table-tennis-racket-free/source/racketLP.fbx
+  artifactKey: Guid(b868243b1d6136e42bc1e60ccc5c27be) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/joola-rosskopf-table-tennis-racket-free/source/racketLP.fbx using Guid(b868243b1d6136e42bc1e60ccc5c27be) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '723666adb1d6a18b3035847c0008e5b7') in 0.7366649 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 29
+
+========================================================================
+Received Import Request.
+  Time since last request: 70.868606 seconds.
+  path: Assets/EasyAssets/Korean_Style_Bar/BG/Models/Bg_Mo_Room_001_001.fbx
+  artifactKey: Guid(7060ccd53f17ccd4dbbedf4d7827af71) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/EasyAssets/Korean_Style_Bar/BG/Models/Bg_Mo_Room_001_001.fbx using Guid(7060ccd53f17ccd4dbbedf4d7827af71) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '4225d6e978f2743ed035f3a1d845329a') in 0.1160903 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 21
+
+========================================================================
+Received Import Request.
+  Time since last request: 36.819816 seconds.
+  path: Assets/SimplePoly City - Low Poly Assets/Materials/Building_Factory.mat
+  artifactKey: Guid(abc266de8c01de040bfa48da3f006d12) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/SimplePoly City - Low Poly Assets/Materials/Building_Factory.mat using Guid(abc266de8c01de040bfa48da3f006d12) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'e0c555863645061a5a95483542998ea2') in 0.0857009 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 3
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Materials/Ground - Surface Shader Scene.mat
+  artifactKey: Guid(aadd5a709a48466c887296bb5b1b8110) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Materials/Ground - Surface Shader Scene.mat using Guid(aadd5a709a48466c887296bb5b1b8110) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1f919074826dd4139ef3bc743e1a3a10') in 4.1287633 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Roboto-Bold SDF - Surface.mat
+  artifactKey: Guid(e6b276ec991f467aa14ef1f3cc665993) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Roboto-Bold SDF - Surface.mat using Guid(e6b276ec991f467aa14ef1f3cc665993) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '8c8ddd2608ca7ec7fea7ef9251a99533') in 0.044002 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 1.600883 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Anton SDF - Drop Shadow.mat
+  artifactKey: Guid(749b9069dc4742c5bfa5c74644049926) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Anton SDF - Drop Shadow.mat using Guid(749b9069dc4742c5bfa5c74644049926) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '80b06c6b41a88b327ea1380bb78fcf18') in 0.1406641 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000024 seconds.
+  path: Assets/TwentyOz/Sample/3DWatermelonGame/Materials/Banana.mat
+  artifactKey: Guid(a314f91cf08b82942bbad5e6ff3c0d67) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TwentyOz/Sample/3DWatermelonGame/Materials/Banana.mat using Guid(a314f91cf08b82942bbad5e6ff3c0d67) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1a71b7db0c83ad57753310bb933056d5') in 0.0288026 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000031 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Anton SDF - Sunny Days.mat
+  artifactKey: Guid(6522f30e342599e4e9dd4cc2cc03c830) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Anton SDF - Sunny Days.mat using Guid(6522f30e342599e4e9dd4cc2cc03c830) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c9fa402c338751dde85d601eccb88738') in 0.226476 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000029 seconds.
+  path: Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat/Ball1.mat
+  artifactKey: Guid(53a71a918f62333469652274df43fbb8) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat/Ball1.mat using Guid(53a71a918f62333469652274df43fbb8) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '747272929cc71251acf78816e945ee52') in 0.1409252 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 1.178209 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF - Drop Shadow.mat
+  artifactKey: Guid(f2dcf029949142e28b974630369c8b4e) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF - Drop Shadow.mat using Guid(f2dcf029949142e28b974630369c8b4e) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '983ddbc20756997f721caf25b03fb6e2') in 0.0369953 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 2
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000032 seconds.
+  path: Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF Logo - URP.mat
+  artifactKey: Guid(6751ce1a4611b3940812c13a6847d94f) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/TextMesh Pro/Examples & Extras/Resources/Fonts & Materials/Bangers SDF Logo - URP.mat using Guid(6751ce1a4611b3940812c13a6847d94f) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'b7710a30c1d9ddaff165a7c907d8ffde') in 4.5396499 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 4
+
+========================================================================
+Received Import Request.
+  Time since last request: 77.365597 seconds.
+  path: Assets/FreeSportsKIt_SA
+  artifactKey: Guid(35b2e4306ce179840945a9e5434d7224) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/FreeSportsKIt_SA using Guid(35b2e4306ce179840945a9e5434d7224) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'bb0ea39ae7d2376a6e754c2fa86f6a60') in 0.0010025 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 45.788471 seconds.
+  path: Assets/BrossLabs/Classic Ping-Pong Racket/Mesh
+  artifactKey: Guid(2b3e3e42284664942818b9297c981c16) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/BrossLabs/Classic Ping-Pong Racket/Mesh using Guid(2b3e3e42284664942818b9297c981c16) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: '1621888697bd7c6dd28676c16d26fb7d') in 0.0005808 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.582947 seconds.
+  path: Assets/BrossLabs/Classic Ping-Pong Racket/Materials
+  artifactKey: Guid(533b08bfd382a2b49aedcbb565fa22f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/BrossLabs/Classic Ping-Pong Racket/Materials using Guid(533b08bfd382a2b49aedcbb565fa22f0) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'b83891f58934b17645d0dd3611381e05') in 0.0006334 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.670807 seconds.
+  path: Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat
+  artifactKey: Guid(84d107dca96ba14449e6e4dd3f8ba199) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Start importing Assets/BrossLabs/Classic Ping-Pong Racket/Materials/Racket Mat using Guid(84d107dca96ba14449e6e4dd3f8ba199) Importer(815301076,1909f56bfc062723c751e8b465ee728b) (PreviewImporter) -> (artifact id: 'c8649ca2b854941064a735923982528a') in 0.0007638 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 0
+
+========================================================================
+Received Import Request.
+  Time since last request: 249.243892 seconds.
+  path: Assets/PingPong/Scenes/Pingpong.unity
+  artifactKey: Guid(575373af9bd32f24cb5f58805368e9c2) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/PingPong/Scenes/Pingpong.unity using Guid(575373af9bd32f24cb5f58805368e9c2) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '8c68de8696e4bd63eb5515ef3046e88f') in 0.024658 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 30.109919 seconds.
+  path: Assets/AddressableAssetsData/AddressableAssetSettings.asset
+  artifactKey: Guid(b7f07668e5b9356489a5253d16c9d057) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/AddressableAssetsData/AddressableAssetSettings.asset using Guid(b7f07668e5b9356489a5253d16c9d057) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '00c0166956d59731a982aa3ec16ff5f3') in 0.0647092 seconds
+Number of updated asset objects reloaded before import = 2Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 232.892126 seconds.
+  path: Assets/AddressableAssetsData/AddressableAssetSettings.asset
+  artifactKey: Guid(b7f07668e5b9356489a5253d16c9d057) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/AddressableAssetsData/AddressableAssetSettings.asset using Guid(b7f07668e5b9356489a5253d16c9d057) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: '19c40e25f01744a19f633dcbaf11a7ab') in 0.0290829 seconds
+Number of updated asset objects reloaded before import = 2Number of asset objects unloaded after import = 1
+
+========================================================================
+Received Import Request.
+  Time since last request: 0.000063 seconds.
+  path: Assets/AddressableAssetsData/Windows/addressables_content_state.bin
+  artifactKey: Guid(2478cdd20bc3a90479860e06498463fd) Importer(2089858483,192608db42251d675da83286b1cce702)
+Start importing Assets/AddressableAssetsData/Windows/addressables_content_state.bin using Guid(2478cdd20bc3a90479860e06498463fd) Importer(2089858483,192608db42251d675da83286b1cce702) (ScriptedImporter) -> (artifact id: 'bc24e1a07beb70f818478cc458aca376') in 0.0165613 seconds
+Number of updated asset objects reloaded before import = 0Number of asset objects unloaded after import = 1
+
