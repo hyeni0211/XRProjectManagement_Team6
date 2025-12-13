@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetSettings
-  m_DefaultGroup: f1bf370845d78a54f998ae92728b56a6
+  m_DefaultGroup: a11d7bb274290994cae5f99bd6a082cb
   m_currentHash:
     serializedVersion: 2
-    Hash: 4554cb8b752da0267e84f79e14810067
+    Hash: f4787563fe4ffe8ef642001516aa143d
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -47,10 +47,10 @@ MonoBehaviour:
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
   m_BuiltInBundleNaming: 2
-  mBuiltInBundleCustomNaming: 9e2317fb-29b3-41d7-9f0a-751db7478372
+  mBuiltInBundleCustomNaming: 92cce764-3d3c-4385-aaeb-5f1d8dd7c1cf
   m_MonoScriptBundleNaming: 2
   m_CheckForContentUpdateRestrictionsOption: 0
-  m_MonoScriptBundleCustomNaming: 9e2317fb-29b3-41d7-9f0a-751db7478372
+  m_MonoScriptBundleCustomNaming: 92cce764-3d3c-4385-aaeb-5f1d8dd7c1cf
   m_RemoteCatalogBuildPath:
     m_Id: 9b8569c255a80a24c885614668d20bd1
   m_RemoteCatalogLoadPath:
@@ -59,7 +59,7 @@ MonoBehaviour:
   m_CustomContentStateBuildPath: 
   m_ContentStateBuildPath: 
   m_BuildAddressablesWithPlayerBuild: 0
-  m_overridePlayerVersion: v2
+  m_overridePlayerVersion: 0.1
   m_GroupAssets:
   - {fileID: 11400000, guid: 8efab025678e98c439ac60b54a1ddc02, type: 2}
   m_BuildSettings:
@@ -76,11 +76,11 @@ MonoBehaviour:
       - m_Id: 1c230a8d882ea3d469d4d95cc224d00e
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 2d2a75ed8be29a941ae9d94023caefb9
-        m_Value: '{{REMOTE_PATH}}/'
+        m_Value: C:\Users\user\AppData\Local\Temp\/VivenSDK/
       - m_Id: 83388cc29a287cb4887862a0461cb89e
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
       - m_Id: 9b8569c255a80a24c885614668d20bd1
-        m_Value: 'ServerData/ac898538-9946-404d-8ce0-6229306ec078/Pingpong/[BuildTarget]'
+        m_Value: C:\Users\user\AppData\Local\Temp\/VivenSDK/
     m_ProfileEntryNames:
     - m_Id: 0a0908142fea28e43b49a9647402c73b
       m_Name: Local.LoadPath
