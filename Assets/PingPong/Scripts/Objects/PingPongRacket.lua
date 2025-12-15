@@ -32,8 +32,20 @@ local rigidbodyModule = nil
 local isGrabbed = false
 
 ---@type number
----@details 공을 쳤을 때 추가되는 힘 배율
-local hitForceMultiplier = 1.5
+---@details 공을 쳤을 때 추가되는 힘 배율 (강화됨)
+local hitForceMultiplier = 8.0
+
+---@type Vector3
+---@details 이전 프레임 라켓 위치 (속도 계산용)
+local previousPosition = nil
+
+---@type Vector3
+---@details 라켓 속도 (매 프레임 계산)
+local racketVelocity = Vector3.zero
+
+---@type GameObject
+---@details 타겟 박스 (공이 날아갈 목표)
+local targetBox = nil
 --endregion
 
 --region Unity Lifecycle
@@ -49,6 +61,27 @@ function start()
         local rigidBody = rigidbodyModule.Rigid
         rigidBody.collisionDetectionMode = CS.UnityEngine.CollisionDetectionMode.ContinuousDynamic
     end
+
+    -- 초기 위치 저장
+    previousPosition = self.transform.position
+
+    -- 타겟 박스 찾기 (BallLauncher의 부모나 씬에서)
+    targetBox = GameObject.Find("TargetBox")
+    if targetBox == nil then
+        targetBox = GameObject.Find("Target")
+    end
+    if targetBox == nil then
+        -- BallLauncher 오브젝트를 타겟으로 사용
+        targetBox = GameObject.Find("BallLauncher")
+    end
+end
+
+function update()
+    -- 라켓 속도 계산 (이전 프레임과 현재 프레임의 위치 차이)
+    if previousPosition ~= nil then
+        racketVelocity = (self.transform.position - previousPosition) / Time.deltaTime
+    end
+    previousPosition = self.transform.position
 end
 --endregion
 
@@ -79,24 +112,71 @@ function onCollisionEnter(collision)
     end
 end
 
----@details 공을 쳤을 때 처리
+---@details 공을 쳤을 때 처리 (실제 탁구 물리 반사)
 function OnHitBall(collision)
     -- 햅틱 피드백 (강하게)
-    PlayHaptic(0.6, 0.1)
+    PlayHaptic(0.8, 0.15)
 
     -- 점수 추가
     if gameManager ~= nil then
         gameManager.AddScore(10)
     end
 
-    -- 공에 추가 힘 적용 (선택적)
     local ballRigidbody = collision.rigidbody
-    if ballRigidbody ~= nil then
-        local hitDirection = collision.contacts[0].normal * -1
-        ballRigidbody:AddForce(hitDirection * hitForceMultiplier, CS.UnityEngine.ForceMode.Impulse)
+    if ballRigidbody == nil then
+        Debug.Log("공을 쳤습니다! (Rigidbody 없음)")
+        return
     end
 
-    Debug.Log("공을 쳤습니다!")
+    -- 1. 공의 입사 속도 (충돌 직전 속도)
+    local incomingVelocity = collision.relativeVelocity
+    local incomingSpeed = incomingVelocity.magnitude
+
+    -- 2. 충돌 노멀 (라켓 면의 방향)
+    local contactNormal = collision.contacts[0].normal
+
+    -- 3. 반사 벡터 계산 (입사각 = 반사각)
+    -- Reflect: V - 2 * dot(V, N) * N
+    local reflectedDirection = Vector3.Reflect(incomingVelocity.normalized, contactNormal)
+
+    -- 4. 라켓 휘두르는 속도 계산
+    local racketSpeed = racketVelocity.magnitude
+    local racketInfluence = racketVelocity.normalized
+
+    -- 5. 최종 방향 계산
+    -- 반사 벡터 60% + 라켓 휘두른 방향 40% (라켓 속도가 클수록 영향 증가)
+    local racketWeight = math.min(racketSpeed / 10.0, 0.6)  -- 최대 60%
+    local reflectWeight = 1.0 - racketWeight
+
+    local finalDirection
+    if racketSpeed > 0.5 then
+        -- 라켓을 휘둘렀으면 휘두른 방향 반영
+        finalDirection = (reflectedDirection * reflectWeight + racketInfluence * racketWeight).normalized
+    else
+        -- 가만히 있으면 순수 반사
+        finalDirection = reflectedDirection
+    end
+
+    -- 6. 최종 속도 계산
+    -- 기본 반사 속도 + 라켓 속도 보너스 + 힘 배율
+    local baseSpeed = incomingSpeed * 1.2  -- 반발 계수 (탁구공은 잘 튕김)
+    local racketBonus = racketSpeed * 1.5  -- 라켓 휘두른 속도 보너스
+    local finalSpeed = (baseSpeed + racketBonus) * (hitForceMultiplier / 5.0)
+
+    -- 최소/최대 속도 제한
+    finalSpeed = math.max(finalSpeed, 5.0)   -- 최소 5
+    finalSpeed = math.min(finalSpeed, 30.0)  -- 최대 30
+
+    -- 7. 공 속도 설정 (AddForce 대신 직접 velocity 설정)
+    local finalVelocity = finalDirection * finalSpeed
+    ballRigidbody.linearVelocity = finalVelocity
+
+    -- 8. 스핀 추가 (라켓 움직임에 따른 스핀)
+    local spinForce = Vector3.Cross(racketVelocity, contactNormal) * 0.5
+    ballRigidbody.angularVelocity = ballRigidbody.angularVelocity + spinForce
+
+    Debug.Log(string.format("공을 쳤습니다! 입사속도: %.1f, 반사속도: %.1f, 라켓속도: %.1f",
+        incomingSpeed, finalSpeed, racketSpeed))
 end
 --endregion
 

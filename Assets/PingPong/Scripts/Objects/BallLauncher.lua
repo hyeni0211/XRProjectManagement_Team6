@@ -37,8 +37,8 @@ local gameManager = nil
 local launchInterval = 2.0
 
 ---@type number
----@details 공 발사 속도
-local ballSpeed = 5.0
+---@details 공 발사 속도 (2배 강화)
+local ballSpeed = 10.0
 
 ---@type number
 ---@details 기계 이동 속도

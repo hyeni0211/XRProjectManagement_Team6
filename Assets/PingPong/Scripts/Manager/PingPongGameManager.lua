@@ -70,11 +70,11 @@ local difficulty = 1
 local isGameRunning = false
 
 ---@type table
----@details 난이도별 설정
+---@details 난이도별 설정 (발사 힘 2배 강화)
 local difficultySettings = {
-    [1] = { ballSpeed = 3, launchInterval = 3.0, machineSpeed = 1 },   -- 쉬움
-    [2] = { ballSpeed = 5, launchInterval = 2.0, machineSpeed = 2 },   -- 보통
-    [3] = { ballSpeed = 8, launchInterval = 1.0, machineSpeed = 3 }    -- 어려움
+    [1] = { ballSpeed = 6, launchInterval = 3.0, machineSpeed = 1 },   -- 쉬움
+    [2] = { ballSpeed = 10, launchInterval = 2.0, machineSpeed = 2 },  -- 보통
+    [3] = { ballSpeed = 16, launchInterval = 1.0, machineSpeed = 3 }   -- 어려움
 }
 --endregion
 
