@@ -53,11 +53,7 @@ function awake()
 end
 
 function start()
-    if material == nil then
-        Debug.LogWarning("ConveyorScroll: MeshRenderer 또는 Material이 없습니다.")
-    else
-        Debug.Log("컨베이어 스크롤 시작 - 속도: " .. scrollSpeed)
-    end
+    -- 초기화 완료
 end
 
 function update()

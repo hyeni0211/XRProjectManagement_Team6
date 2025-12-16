@@ -33,8 +33,8 @@ GameManagerObject = NullableInject(GameManagerObject)
 ShootSoundObject = NullableInject(ShootSoundObject)
 
 ---@type number
----@details 총알 발사 속도
-bulletSpeed = 30.0
+---@details 총알 발사 속도 (5~10 권장)
+bulletSpeed = 8.0
 
 ---@type number
 ---@details 발사 간격 (초)
@@ -74,6 +74,14 @@ local lastShootTime = 0
 ---@details 왼손/오른손 여부
 local isLeftHand = false
 
+---@type boolean
+---@details 이벤트 기반 트리거 사용 여부
+local useEventBasedTrigger = false
+
+---@type boolean
+---@details 홀드(연사) 상태
+local isHolding = false
+
 --endregion
 
 --region Pool Variables
@@ -106,6 +114,10 @@ local HIDE_POSITION = nil
 ---@details 초기화 완료 여부
 local isInitialized = false
 
+---@type table
+---@details 총알 발사 시간 기록 {poolIndex = fireTime}
+local bulletFireTimes = {}
+
 --endregion
 
 --region Unity Lifecycle
@@ -137,11 +149,73 @@ function start()
     lastShootTime = 0
 end
 
+---@type number
+---@details 총알 자동 반환 시간
+local bulletAutoReturnTime = 3.0
+
+function update()
+    -- 발사된 총알 자동 반환 체크
+    CheckAndReturnBullets()
+end
+
+---@details 발사된 총알 체크 및 자동 반환
+function CheckAndReturnBullets()
+    if #bulletPool.inUse == 0 then return end
+
+    local currentTime = Time.time
+    local toReturn = {}
+
+    -- 반환할 총알 수집
+    for _, poolIndex in ipairs(bulletPool.inUse) do
+        local bulletObj = bulletObjects[poolIndex]
+
+        if bulletObj then
+            local shouldReturn = false
+
+            -- 1. 발사 시간 체크 (ShootingGun이 자체 기록)
+            local fireTime = bulletFireTimes[poolIndex]
+            if fireTime and (currentTime - fireTime) > bulletAutoReturnTime then
+                shouldReturn = true
+            end
+
+            -- 2. 위치 체크 (범위 밖이면 반환)
+            local pos = bulletObj.transform.position
+            if pos.y < -50 or pos.y > 100 or math.abs(pos.x) > 100 or math.abs(pos.z) > 100 then
+                shouldReturn = true
+            end
+
+            if shouldReturn then
+                table.insert(toReturn, poolIndex)
+            end
+        end
+    end
+
+    -- 수집된 총알 반환
+    for _, poolIndex in ipairs(toReturn) do
+        ReturnBulletToPool(poolIndex)
+        bulletFireTimes[poolIndex] = nil
+    end
+end
+
 function onEnable()
     -- 이벤트 리스너 등록
     if grabbableModule then
         grabbableModule.onGrabEvent:AddListener(OnGrab)
         grabbableModule.onReleaseEvent:AddListener(OnRelease)
+
+        -- Viven SDK 트리거 이벤트 (objectShortClickAction = 짧게 클릭)
+        if grabbableModule.objectShortClickAction then
+            grabbableModule.objectShortClickAction:AddListener(OnTriggerClick)
+            useEventBasedTrigger = true
+        end
+
+        -- 길게 누르기 이벤트 (연사용)
+        if grabbableModule.objectHoldActionStart then
+            grabbableModule.objectHoldActionStart:AddListener(OnHoldStart)
+        end
+        if grabbableModule.objectHoldActionEnd then
+            grabbableModule.objectHoldActionEnd:AddListener(OnHoldEnd)
+        end
     end
 end
 
@@ -150,13 +224,25 @@ function onDisable()
     if grabbableModule then
         grabbableModule.onGrabEvent:RemoveListener(OnGrab)
         grabbableModule.onReleaseEvent:RemoveListener(OnRelease)
+
+        -- Viven SDK 트리거 이벤트 해제
+        if grabbableModule.objectShortClickAction then
+            grabbableModule.objectShortClickAction:RemoveListener(OnTriggerClick)
+        end
+        if grabbableModule.objectHoldActionStart then
+            grabbableModule.objectHoldActionStart:RemoveListener(OnHoldStart)
+        end
+        if grabbableModule.objectHoldActionEnd then
+            grabbableModule.objectHoldActionEnd:RemoveListener(OnHoldEnd)
+        end
     end
 end
 
 function update()
     if not isGrabbed then return end
+    if useEventBasedTrigger then return end -- 이벤트 기반이면 폴링 불필요
 
-    -- 트리거 입력 확인
+    -- 트리거 입력 확인 (폴링 방식)
     CheckTriggerInput()
 end
 
@@ -164,15 +250,29 @@ end
 
 --region Input
 
----@details 트리거 입력 확인
+---@details 트리거 입력 확인 (Unity Input System 사용)
 function CheckTriggerInput()
-    -- XR 컨트롤러 트리거 입력 확인
+    -- Unity Input System을 통한 트리거 입력 확인
     local triggerValue = 0
 
-    if isLeftHand then
-        triggerValue = XR.GetLeftTriggerValue()
+    -- pcall로 안전하게 API 호출 시도
+    local success, result = pcall(function()
+        if isLeftHand then
+            -- 왼손 트리거
+            return CS.UnityEngine.Input.GetAxis("XRI_Left_Trigger")
+        else
+            -- 오른손 트리거
+            return CS.UnityEngine.Input.GetAxis("XRI_Right_Trigger")
+        end
+    end)
+
+    if success and result then
+        triggerValue = result
     else
-        triggerValue = XR.GetRightTriggerValue()
+        -- 폴백: 마우스 클릭으로 테스트 (에디터용)
+        if CS.UnityEngine.Input.GetMouseButton(0) then
+            triggerValue = 1.0
+        end
     end
 
     -- 트리거 누름 감지 (임계값 0.5)
@@ -191,6 +291,24 @@ function OnTriggerPressed()
     TryShoot()
 end
 
+---@details 짧게 클릭 이벤트 (Viven SDK objectShortClickAction)
+function OnTriggerClick()
+    if not isGrabbed then return end
+    TryShoot()
+end
+
+---@details 길게 누르기 시작 (Viven SDK objectHoldActionStart) - 연사 시작
+function OnHoldStart()
+    if not isGrabbed then return end
+    isHolding = true
+    TryShoot()
+end
+
+---@details 길게 누르기 종료 (Viven SDK objectHoldActionEnd) - 연사 종료
+function OnHoldEnd()
+    isHolding = false
+end
+
 --endregion
 
 --region Grab Events
@@ -206,16 +324,12 @@ function OnGrab()
 
     -- 잡기 햅틱
     PlayGrabHaptic()
-
-    Debug.Log("총 잡음 - " .. (isLeftHand and "왼손" or "오른손"))
 end
 
 ---@details 놓기 이벤트
 function OnRelease()
     isGrabbed = false
     isTriggerPressed = false
-
-    Debug.Log("총 놓음")
 end
 
 --endregion
@@ -243,38 +357,40 @@ function Shoot()
     local bulletObj, bulletScript, poolIndex = GetBulletFromPool()
 
     if not bulletObj then
-        Debug.LogWarning("총알 풀이 비어있습니다!")
         return
     end
 
     -- 총알 위치 및 방향 설정
     local shootPos = ShootPoint.transform.position
-    local shootDir = ShootPoint.transform.forward
+    local shootDir = ShootPoint.transform:TransformDirection(Vector3.forward)
 
+    -- 총알 위치/회전 설정
     bulletObj.transform.position = shootPos
     bulletObj.transform.rotation = ShootPoint.transform.rotation
 
     -- 총알 활성화
     SetBulletVisible(poolIndex, true)
 
-    -- 총알 발사
-    if bulletScript then
-        bulletScript:Fire(shootDir, bulletSpeed, poolIndex)
-    else
-        -- 스크립트가 없으면 직접 Rigidbody로 발사
-        local rb = bulletObj:GetComponent(typeof(CS.UnityEngine.Rigidbody))
-        if rb then
-            rb.linearVelocity = shootDir * bulletSpeed
-        end
+    -- 발사 시간 기록 (자동 반환용)
+    bulletFireTimes[poolIndex] = Time.time
+
+    -- Rigidbody로 발사 (Impulse - 한 번에 빵!)
+    local rb = bulletObj:GetComponent(typeof(CS.UnityEngine.Rigidbody))
+    if rb then
+        rb.linearVelocity = Vector3.zero
+        rb.angularVelocity = Vector3.zero
+        -- Impulse: 질량 고려한 순간적인 힘 (F = m * v)
+        rb:AddForce(shootDir * bulletSpeed * rb.mass, CS.UnityEngine.ForceMode.Impulse)
     end
 
-    -- 사운드 재생
+    -- 총알 스크립트 Fire 호출 (타이머용)
+    if bulletScript then
+        bulletScript:Fire(shootDir, bulletSpeed, poolIndex)
+    end
+
+    -- 사운드 및 햅틱
     PlayShootSound()
-
-    -- 햅틱 피드백
     PlayShootHaptic()
-
-    Debug.Log("총알 발사!")
 end
 
 --endregion
@@ -283,7 +399,10 @@ end
 
 ---@details 총알 풀 초기화
 function InitializeBulletPool()
-    if not BulletPool then return end
+    if not BulletPool then
+        Debug.Log("[ERROR] BulletPool이 연결되지 않았습니다!")
+        return
+    end
 
     bulletObjects = {}
     bulletScripts = {}
@@ -291,6 +410,8 @@ function InitializeBulletPool()
     bulletColliders = {}
     bulletPool.available = {}
     bulletPool.inUse = {}
+
+    local missingScripts = 0
 
     for i = 0, BulletPool.transform.childCount - 1 do
         local child = BulletPool.transform:GetChild(i).gameObject
@@ -325,13 +446,18 @@ function InitializeBulletPool()
         if bulletScript then
             bulletScript.SetGun(self)
             bulletScript.SetPoolIndex(index)
+        else
+            missingScripts = missingScripts + 1
         end
 
         -- 비활성화
         SetBulletVisible(index, false)
     end
 
-    Debug.Log("총알 풀 초기화 완료 - 크기: " .. #bulletObjects)
+    -- 초기화 결과 요약 (1회만 출력)
+    if missingScripts > 0 then
+        -- Debug.Log("[WARNING] Bullet 스크립트 없는 오브젝트: " .. missingScripts .. "개")
+    end
 end
 
 ---@details 총알 가시성 설정

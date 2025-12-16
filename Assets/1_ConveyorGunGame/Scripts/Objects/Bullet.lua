@@ -42,9 +42,9 @@ local rigidbody = nil
 ---@details 게임 매니저 참조
 local gameManager = nil
 
----@type ShootingGun
----@details 소속 총 참조
-local ownerGun = nil
+---@type table
+---@details 소속 총 Lua 스크립트 테이블
+local ownerGunScript = nil
 
 ---@type number
 ---@details 풀 내 인덱스
@@ -82,6 +82,44 @@ function awake()
     if GameManagerObject then
         gameManager = GameManagerObject:GetLuaComponent("ConveyorGameManager")
     end
+
+    -- ShootingGun Lua 스크립트 찾기
+    FindOwnerGunScript()
+end
+
+---@details ShootingGun Lua 스크립트 테이블 찾기
+function FindOwnerGunScript()
+    if ownerGunScript then return end
+
+    -- 방법 1: 씬에서 이름으로 찾기
+    local gunNames = {
+        "Gun_Cosmic_Retro_Blaster_1",
+        "Gun_Cosmic_Retro_Blaster",
+        "ShootingGun",
+        "Gun"
+    }
+
+    for _, name in ipairs(gunNames) do
+        local gunObj = GameObject.Find(name)
+        if gunObj then
+            local script = gunObj:GetLuaComponent("ShootingGun")
+            if script and script.ReturnBulletToPool then
+                ownerGunScript = script
+                return
+            end
+        end
+    end
+
+    -- 방법 2: 부모 계층에서 찾기
+    local current = self.transform.parent
+    while current do
+        local script = current.gameObject:GetLuaComponent("ShootingGun")
+        if script and script.ReturnBulletToPool then
+            ownerGunScript = script
+            return
+        end
+        current = current.parent
+    end
 end
 
 function start()
@@ -101,24 +139,42 @@ end
 function update()
     if not isFired then return end
 
-    -- 자동 반환 시간 체크 (코루틴 백업)
+    -- 자동 반환 시간 체크
     if Time.time - fireTime > autoReturnTime then
-        ReturnToPool()
+        ForceReturnToPool()
+        return
+    end
+
+    -- 범위 밖 체크 (너무 멀리 날아가면 반환)
+    local pos = self.transform.position
+    if pos.y < -50 or pos.y > 100 or math.abs(pos.x) > 100 or math.abs(pos.z) > 100 then
+        ForceReturnToPool()
     end
 end
 
 function fixedUpdate()
-    if not isFired then return end
-
-    -- 속도 유지 (Rigidbody가 있는 경우)
-    if rigidbody and fireDirection then
-        rigidbody.linearVelocity = fireDirection * fireSpeed
-    end
+    -- 물리 엔진이 알아서 처리하도록 비워둠
+    -- (매 프레임 속도 강제 설정하면 kinematic처럼 동작함)
 end
 
 --endregion
 
 --region Collision Detection
+
+---@details 타겟인지 확인
+---@param objName string 오브젝트 이름
+---@param objTag string 오브젝트 태그
+---@return boolean
+function IsTarget(objName, objTag)
+    -- 태그로 확인
+    if objTag == "Target" then return true end
+
+    -- 이름으로 확인 (Ball 종류들)
+    if string.find(objName, "Ball") or string.find(objName, "ball") then return true end
+    if string.find(objName, "Target") or string.find(objName, "target") then return true end
+
+    return false
+end
 
 ---@details 트리거 진입 이벤트
 ---@param other Collider 충돌한 콜라이더
@@ -128,8 +184,8 @@ function onTriggerEnter(other)
     local otherName = other.gameObject.name
     local otherTag = other.gameObject.tag
 
-    -- 타겟 충돌 확인
-    if otherTag == "Target" or string.find(otherName, "Target") or string.find(otherName, "target") then
+    -- 타겟 충돌 확인 (Ball 포함)
+    if IsTarget(otherName, otherTag) then
         OnHitTarget(other.gameObject)
         return
     end
@@ -149,8 +205,13 @@ function onCollisionEnter(collision)
     local otherName = collision.gameObject.name
     local otherTag = collision.gameObject.tag
 
-    -- 타겟 충돌 확인
-    if otherTag == "Target" or string.find(otherName, "Target") or string.find(otherName, "target") then
+    -- Gun/Bullet 무시 (자기 자신이나 총과 충돌 무시)
+    if string.find(otherName, "Gun") or string.find(otherName, "Bullet") or otherTag == "Bullet" then
+        return
+    end
+
+    -- 타겟 충돌 확인 (Ball 포함)
+    if IsTarget(otherName, otherTag) then
         OnHitTarget(collision.gameObject)
         return
     end
@@ -165,22 +226,26 @@ end
 ---@details 타겟 히트 처리
 ---@param targetObject GameObject 히트된 타겟
 function OnHitTarget(targetObject)
-    Debug.Log("총알이 타겟 맞춤: " .. targetObject.name)
+    -- 타겟에 힘 가하기 (튕겨나가게)
+    local targetRb = targetObject:GetComponent(typeof(CS.UnityEngine.Rigidbody))
+    if targetRb and fireDirection then
+        local hitForce = fireDirection * fireSpeed * 2.0
+        targetRb:AddForce(hitForce, CS.UnityEngine.ForceMode.Impulse)
+    end
 
-    -- 히트 이펙트 재생
+    -- 타겟 스크립트에 히트 알림
+    local targetScript = targetObject:GetLuaComponent("Target")
+    if targetScript and targetScript.OnHitByBullet then
+        targetScript.OnHitByBullet(self.gameObject)
+    end
+
     PlayHitEffect()
-
-    -- 타겟의 피격 처리는 Target.lua에서 onTriggerEnter로 처리됨
-    -- 여기서는 총알만 풀로 반환
-
     ReturnToPool()
 end
 
 ---@details 장애물 히트 처리
 ---@param obstacleObject GameObject 히트된 장애물
 function OnHitObstacle(obstacleObject)
-    Debug.Log("총알이 장애물 맞춤: " .. obstacleObject.name)
-
     ReturnToPool()
 end
 
@@ -205,10 +270,8 @@ end
 
 --region Pool Management
 
----@details 풀로 반환
-function ReturnToPool()
-    if not isFired then return end
-
+---@details 강제 풀 반환 (isFired 체크 안함)
+function ForceReturnToPool()
     isFired = false
 
     -- 코루틴 정지
@@ -220,12 +283,45 @@ function ReturnToPool()
         rigidbody.angularVelocity = Vector3.zero
     end
 
-    -- 소유 총에 반환 알림
-    if ownerGun and ownerGun.ReturnBulletToPool then
-        ownerGun.ReturnBulletToPool(poolIndex)
+    -- ownerGun이 없으면 다시 찾기
+    if not ownerGunScript then
+        FindOwnerGunScript()
     end
 
-    Debug.Log("총알 풀 반환: " .. poolIndex)
+    -- 소유 총에 반환 알림
+    if ownerGunScript and ownerGunScript.ReturnBulletToPool then
+        ownerGunScript.ReturnBulletToPool(poolIndex)
+    else
+        -- ShootingGun에서 update로 처리하도록 숨기기만 함
+        HideBullet()
+    end
+end
+
+---@details 총알 직접 숨김 처리
+function HideBullet()
+    self.transform.position = Vector3(0, -9999, 0)
+
+    -- MeshRenderer 비활성화
+    local meshRenderers = self:GetComponentsInChildren(typeof(CS.UnityEngine.MeshRenderer))
+    if meshRenderers then
+        for i = 0, meshRenderers.Length - 1 do
+            meshRenderers[i].enabled = false
+        end
+    end
+
+    -- Collider 비활성화
+    local colliders = self:GetComponentsInChildren(typeof(CS.UnityEngine.Collider))
+    if colliders then
+        for i = 0, colliders.Length - 1 do
+            colliders[i].enabled = false
+        end
+    end
+end
+
+---@details 풀로 반환
+function ReturnToPool()
+    if not isFired then return end
+    ForceReturnToPool()
 end
 
 ---@details 자동 반환 코루틴 시작
@@ -235,8 +331,7 @@ function StartAutoReturnRoutine()
     autoReturnRoutine = self:StartCoroutine(util.cs_generator(function()
         coroutine.yield(WaitForSeconds(autoReturnTime))
         if isFired then
-            Debug.Log("총알 자동 반환 (시간 초과)")
-            ReturnToPool()
+            ForceReturnToPool()
         end
     end))
 end
@@ -268,21 +363,21 @@ function Fire(_, direction, speed, index)
         poolIndex = index
     end
 
-    -- Rigidbody 속도 설정
-    if rigidbody then
-        rigidbody.linearVelocity = direction * speed
-    end
+    -- ShootingGun에서 이미 AddForce로 발사함
+    -- 여기서는 타이머만 시작
 
     -- 자동 반환 코루틴 시작
     StartAutoReturnRoutine()
-
-    Debug.Log("총알 발사! 속도: " .. speed)
 end
 
----@details 소유 총 설정
----@param gun ShootingGun 총 스크립트
-function SetGun(gun)
-    ownerGun = gun
+---@details 소유 총 설정 (VivenLuaBehaviour에서 Lua 스크립트 추출)
+---@param gunComponent VivenLuaBehaviour 총 컴포넌트
+function SetGun(gunComponent)
+    -- gunComponent는 VivenLuaBehaviour (C# 컴포넌트)
+    -- gameObject에서 Lua 스크립트 테이블을 가져옴
+    if gunComponent and gunComponent.gameObject then
+        ownerGunScript = gunComponent.gameObject:GetLuaComponent("ShootingGun")
+    end
 end
 
 ---@details 풀 인덱스 설정

@@ -22,7 +22,7 @@ speed = 0.8
 
 ---@type Vector3
 ---@details 이동 방향 (로컬 좌표)
-direction = Vector3.new(0, 0, 1)
+direction = Vector3(0, 0, 1)
 --endregion
 
 --region Variables
@@ -32,19 +32,19 @@ local enableDebugLog = false
 
 ---@type number
 ---@details 힘 배율
-local forceMultiplier = 10.0
+local forceMultiplier = 2.0
 --endregion
 
 --region Unity Lifecycle
 function awake()
     -- direction이 주입되지 않았으면 기본값 설정
     if direction == nil then
-        direction = Vector3.new(0, 0, 1)
+        direction = Vector3(0, 0, 1)
     end
 end
 
 function start()
-    Debug.Log("컨베이어 벨트 시작 - 속도: " .. speed)
+    -- 초기화 완료
 end
 --endregion
 

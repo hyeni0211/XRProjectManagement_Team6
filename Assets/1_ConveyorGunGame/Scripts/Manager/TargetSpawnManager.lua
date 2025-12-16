@@ -118,7 +118,7 @@ local HIDE_POSITION = nil
 function awake()
     -- Pool 체크
     if not TargetPool then
-        Debug.LogError("TargetSpawnManager: TargetPool이 할당되지 않았습니다!")
+        Debug.Log("[ERROR] TargetSpawnManager: TargetPool이 할당되지 않았습니다!")
         isInitialized = false
         return
     end
@@ -137,7 +137,7 @@ function awake()
     isPoolInitializing = false
 
     isInitialized = true
-    Debug.Log("TargetSpawnManager 초기화 완료 - 풀 크기: " .. #poolObjects)
+    -- Debug.Log("TargetSpawnManager 초기화 완료 - 풀 크기: " .. #poolObjects)
 end
 
 function start()
@@ -188,19 +188,23 @@ function InitializePool()
             Rot = child.transform.rotation
         }
 
-        -- MeshRenderer 수집
-        local meshRenderers = child:GetComponentsInChildren(typeof(CS.UnityEngine.MeshRenderer))
+        -- MeshRenderer 수집 (비활성화된 것도 포함)
+        local meshRenderers = child:GetComponentsInChildren(typeof(CS.UnityEngine.MeshRenderer), true)
         local tempMeshes = {}
-        for j = 0, meshRenderers.Length - 1 do
-            tempMeshes[#tempMeshes + 1] = meshRenderers[j]
+        if meshRenderers and meshRenderers.Length > 0 then
+            for j = 0, meshRenderers.Length - 1 do
+                tempMeshes[#tempMeshes + 1] = meshRenderers[j]
+            end
         end
         poolMeshRenderers[index] = tempMeshes
 
-        -- Collider 수집
-        local colliders = child:GetComponentsInChildren(typeof(CS.UnityEngine.Collider))
+        -- Collider 수집 (비활성화된 것도 포함)
+        local colliders = child:GetComponentsInChildren(typeof(CS.UnityEngine.Collider), true)
         local tempColliders = {}
-        for j = 0, colliders.Length - 1 do
-            tempColliders[#tempColliders + 1] = colliders[j]
+        if colliders and colliders.Length > 0 then
+            for j = 0, colliders.Length - 1 do
+                tempColliders[#tempColliders + 1] = colliders[j]
+            end
         end
         poolColliders[index] = tempColliders
 
@@ -376,8 +380,6 @@ function StartSpawning(_)
             coroutine.yield(WaitForSeconds(spawnInterval))
         end
     end))
-
-    Debug.Log("타겟 스폰 시작!")
 end
 
 ---@details 스폰 정지
@@ -390,8 +392,6 @@ function StopSpawning(_)
         self:StopCoroutine(spawnCoroutine)
         spawnCoroutine = nil
     end
-
-    Debug.Log("타겟 스폰 정지")
 end
 
 ---@details 스폰 일시정지
@@ -452,6 +452,7 @@ function SpawnTarget()
     local targetObject, targetScript, poolIndex = GetFromPool()
 
     if not targetObject then
+        Debug.Log("[WARNING] SpawnTarget: 풀에서 오브젝트를 가져오지 못함")
         return false
     end
 
@@ -483,7 +484,6 @@ function SpawnTarget()
         poolIndex = poolIndex
     })
 
-    Debug.Log("타겟 스폰: " .. targetObject.name)
     return true
 end
 

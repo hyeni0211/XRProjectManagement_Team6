@@ -160,7 +160,9 @@ function onCollisionEnter(collision)
     local otherName = collision.gameObject.name
     local otherTag = collision.gameObject.tag
 
+    -- Bullet 관련만 로그
     if otherTag == "Bullet" or string.find(otherName, "Bullet") or string.find(otherName, "bullet") then
+        Debug.Log("[Target] Bullet 충돌 감지! " .. otherName)
         OnHitByBullet(collision.gameObject)
     end
 end
@@ -174,14 +176,10 @@ function OnHitByBullet(bulletObject)
 
     -- 가이드 시스템: 공 종류 체크하여 점수 계산
     if gameManager then
-        -- 새로운 가이드 시스템 사용
         if gameManager.OnTargetHit then
-            local isCorrect = gameManager.OnTargetHit(myBallType)
-            Debug.Log("타겟 피격! 공 종류: " .. (myBallType or "Unknown") .. " / 정답: " .. tostring(isCorrect))
+            gameManager.OnTargetHit(myBallType)
         else
-            -- 기존 방식 (호환용)
             gameManager.AddScore(scoreValue)
-            Debug.Log("타겟 피격! 점수: " .. scoreValue)
         end
     end
 
@@ -239,8 +237,6 @@ function OnReachEnd()
     if gameManager and gameManager.OnTargetMissed then
         gameManager.OnTargetMissed()
     end
-
-    Debug.Log("타겟 놓침!")
 
     ReturnToPool()
 end

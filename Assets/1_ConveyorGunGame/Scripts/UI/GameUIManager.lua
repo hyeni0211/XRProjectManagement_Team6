@@ -231,22 +231,19 @@ end
 ---@param amount number 증가량
 function OnScoreIncrease(amount)
     -- 콤보 메시지 표시
-    if currentCombo >= 3 then
-        ShowMessage("COMBO x" .. currentCombo .. "!", 1.5)
+    if currentCombo >= 10 then
+        ShowMessage("INCREDIBLE!", 2.5)
     elseif currentCombo >= 5 then
         ShowMessage("EXCELLENT!", 2.0)
-    elseif currentCombo >= 10 then
-        ShowMessage("INCREDIBLE!", 2.5)
+    elseif currentCombo >= 3 then
+        ShowMessage("COMBO x" .. currentCombo .. "!", 1.5)
     end
-
-    Debug.Log("점수 증가: +" .. amount .. " (콤보: " .. currentCombo .. ")")
 end
 
 ---@details 점수 감소 시 호출
 ---@param amount number 감소량
 function OnScoreDecrease(amount)
     ShowMessage("MISS!", 1.0)
-    Debug.Log("점수 감소: -" .. amount)
 end
 
 --endregion

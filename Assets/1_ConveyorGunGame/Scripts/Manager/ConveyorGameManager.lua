@@ -72,7 +72,7 @@ BallGuide_VolleyBall = NullableInject(BallGuide_VolleyBall)
 BallGuide_BowlingBall = NullableInject(BallGuide_BowlingBall)
 BallGuide_BeachBall = NullableInject(BallGuide_BeachBall)
 BallGuide_BaseBall = NullableInject(BallGuide_BaseBall)
-BallGuide_SoccerBall = NullableInject(SoccerBall)
+BallGuide_SoccerBall = NullableInject(BallGuide_SoccerBall)
 BallGuide_TennisBall = NullableInject(BallGuide_TennisBall)
 
 ---@type number
@@ -342,8 +342,6 @@ function StartGame()
     -- 햅틱 피드백
     XR.StartControllerVibration(false, 0.3, 0.1)
     XR.StartControllerVibration(true, 0.3, 0.1)
-
-    Debug.Log("컨베이어 건 게임 시작!")
 end
 
 ---@details 게임 종료
@@ -374,8 +372,6 @@ function StopGame()
     -- 햅틱 피드백
     XR.StartControllerVibration(false, 0.5, 0.2)
     XR.StartControllerVibration(true, 0.5, 0.2)
-
-    Debug.Log("컨베이어 건 게임 종료! 최종 점수: " .. score .. " (명중: " .. hitCount .. ", 미스: " .. missCount .. ")")
 end
 
 ---@details 게임 일시정지
@@ -387,8 +383,6 @@ function PauseGame()
     if spawnManager then
         spawnManager:PauseSpawning()
     end
-
-    Debug.Log("게임 일시정지")
 end
 
 ---@details 게임 재개
@@ -400,8 +394,6 @@ function ResumeGame()
     if spawnManager then
         spawnManager:ResumeSpawning()
     end
-
-    Debug.Log("게임 재개")
 end
 
 ---@details 게임 리셋
@@ -472,6 +464,8 @@ end
 function OnTargetHit(ballType)
     if not isGameRunning then return false end
 
+    Debug.Log("[GameManager] OnTargetHit: " .. tostring(ballType) .. " vs 가이드: " .. tostring(currentTargetBallType))
+
     local isCorrect = (ballType == currentTargetBallType)
 
     if isCorrect then
@@ -487,7 +481,6 @@ function OnTargetHit(ballType)
         XR.StartControllerVibration(false, 0.5, 0.1)
         XR.StartControllerVibration(true, 0.5, 0.1)
 
-        Debug.Log("정답! +" .. correctHitScore .. " (" .. ballType .. " = " .. currentTargetBallType .. ")")
     else
         -- 오답: 가이드와 다른 공
         score = score + wrongHitScore
@@ -500,8 +493,6 @@ function OnTargetHit(ballType)
         -- 약한 햅틱 피드백
         XR.StartControllerVibration(false, 0.2, 0.05)
         XR.StartControllerVibration(true, 0.2, 0.05)
-
-        Debug.Log("오답! +" .. wrongHitScore .. " (" .. ballType .. " ≠ " .. currentTargetBallType .. ")")
     end
 
     return isCorrect
@@ -522,8 +513,6 @@ function AddScore(points)
     -- 햅틱 피드백
     XR.StartControllerVibration(false, 0.4, 0.08)
     XR.StartControllerVibration(true, 0.4, 0.08)
-
-    Debug.Log("점수 획득! +" .. points .. " (총: " .. score .. ")")
 end
 
 ---@details 타겟 놓침 처리
@@ -542,8 +531,6 @@ function OnTargetMissed()
     -- 햅틱 피드백 (약하게)
     XR.StartControllerVibration(false, 0.2, 0.05)
     XR.StartControllerVibration(true, 0.2, 0.05)
-
-    Debug.Log("타겟 놓침! -" .. missedPenalty .. " (총: " .. score .. ")")
 end
 
 ---@details 현재 점수 반환
@@ -645,8 +632,6 @@ function OnClickStartButton()
     ShowGameUI(true)
     ShowGameOverUI(false)
     StartGame()
-
-    Debug.Log("시작 버튼 클릭!")
 end
 
 ---@details 재시작 버튼 클릭
@@ -656,8 +641,6 @@ function OnClickRestartButton()
     ShowGameOverUI(false)
     ResetGameStats()
     StartGame()
-
-    Debug.Log("재시작 버튼 클릭!")
 end
 
 --endregion
@@ -735,8 +718,6 @@ function SelectRandomTargetBallType()
 
     -- 가이드 UI 업데이트
     UpdateGuideUI()
-
-    Debug.Log("새 타겟 공 종류: " .. currentTargetBallType .. " (" .. (BALL_TYPE_NAMES[currentTargetBallType] or currentTargetBallType) .. ")")
 end
 
 ---@details 가이드 UI 업데이트

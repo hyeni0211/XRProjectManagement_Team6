@@ -206,6 +206,13 @@ namespace ConveyorGunGame.Editor
             {
                 SetupUIElements();
             }
+
+            // === UI 구조 정리 버튼 ===
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("🔧 Organize UI Structure (Fix GameUIPanel)", GUILayout.Height(30)))
+            {
+                OrganizeUIStructure();
+            }
             GUI.backgroundColor = Color.white;
 
             EditorGUILayout.EndScrollView();
@@ -345,6 +352,18 @@ namespace ConveyorGunGame.Editor
             FixAllNullInjectionArrays();
         }
 
+        [MenuItem(MENU_PATH + "/Setup Conveyor Belt", false, 30)]
+        public static void SetupConveyorBeltMenu()
+        {
+            SetupConveyorBelt();
+        }
+
+        [MenuItem(MENU_PATH + "/Setup Target Collector (Dustbin)", false, 31)]
+        public static void SetupTargetCollectorMenu()
+        {
+            SetupTargetCollector();
+        }
+
         #endregion
 
         #region Auto Setup
@@ -366,7 +385,13 @@ namespace ConveyorGunGame.Editor
             // 3. 총 설정
             SetupGun();
 
-            // 4. UI 요소 설정
+            // 4. 컨베이어 벨트 설정
+            SetupConveyorBelt();
+
+            // 4.5. 공 수거 영역 설정
+            SetupTargetCollector();
+
+            // 5. UI 요소 설정
             SetupUIElements();
 
             // 5. 모든 Injection 설정
@@ -453,13 +478,16 @@ namespace ConveyorGunGame.Editor
         #region UI Elements Setup
 
         /// <summary>
-        /// GameCanvas 내 UI 요소들을 찾아서 설정
+        /// GameCanvas 및 Canvas_left 내 UI 요소들을 찾아서 설정
+        /// 없는 요소는 자동 생성
         /// </summary>
         public static void SetupUIElements()
         {
             Debug.Log("=== Setting up UI Elements ===");
 
             GameObject gameCanvas = GameObject.Find(GAME_CANVAS_NAME);
+            GameObject canvasLeft = GameObject.Find("Canvas_left");
+
             if (gameCanvas == null)
             {
                 Debug.LogWarning("GameCanvas not found!");
@@ -472,24 +500,35 @@ namespace ConveyorGunGame.Editor
                 // Injection 이름 → 검색할 이름들 (영어 먼저, 한글 fallback)
                 { "ScoreTextObject", new[] { "Score", "ScoreText", "점수" } },
                 { "TimerTextObject", new[] { "Timer", "TimerText", "타이머" } },
-                { "StartUIPanel", new[] { "StartUIPanel", "StartUI", "Ready", "준비!" } },
+                { "StartUIPanel", new[] { "StartUIPanel", "StartUI", "Ready", "ReadyText", "준비!" } },
                 { "GameUIPanel", new[] { "GameUIPanel", "GameUI" } },
-                { "GameOverUIPanel", new[] { "GameOverUIPanel", "GameOverUI", "GameOver", "게임종료" } },
+                { "GameOverUIPanel", new[] { "GameOverUIPanel", "GameOverUI", "GameOver", "GameOverText", "게임종료" } },
                 { "StartButtonObject", new[] { "StartButton", "Start", "시작" } },
                 { "RestartButtonObject", new[] { "RestartButton", "Restart", "재시작" } },
-                { "FinalScoreTextObject", new[] { "FinalScore", "FinalScoreText" } },
-                { "GuideTextObject", new[] { "GuideText", "Guide", "가이드" } }
+                { "FinalScoreTextObject", new[] { "FinalScore", "FinalScoreText", "GameOverText", "게임종료" } },
+                { "GuideTextObject", new[] { "GuideText", "Guide", "가이드", "TargetGuide" } }
             };
 
-            // 각 UI 요소 찾기
+            // 각 UI 요소 찾기 (GameCanvas와 Canvas_left 양쪽에서)
             foreach (var mapping in uiMappings)
             {
                 GameObject foundObj = null;
 
+                // 먼저 GameCanvas에서 찾기
                 foreach (var searchName in mapping.Value)
                 {
                     foundObj = FindChildRecursive(gameCanvas.transform, searchName);
                     if (foundObj != null) break;
+                }
+
+                // 못 찾았으면 Canvas_left에서 찾기
+                if (foundObj == null && canvasLeft != null)
+                {
+                    foreach (var searchName in mapping.Value)
+                    {
+                        foundObj = FindChildRecursive(canvasLeft.transform, searchName);
+                        if (foundObj != null) break;
+                    }
                 }
 
                 if (foundObj != null)
@@ -502,7 +541,429 @@ namespace ConveyorGunGame.Editor
                 }
             }
 
+            // 필수 UI 요소가 없으면 자동 생성
+            CreateMissingUIElements(gameCanvas);
+
             Debug.Log("=== UI Elements setup completed ===");
+        }
+
+        /// <summary>
+        /// 누락된 필수 UI 요소 자동 생성
+        /// </summary>
+        private static void CreateMissingUIElements(GameObject gameCanvas)
+        {
+            // GuideText가 없으면 생성
+            GameObject guideText = FindChildRecursive(gameCanvas.transform, "GuideText");
+            if (guideText == null)
+            {
+                guideText = CreateTextElement(gameCanvas.transform, "GuideText", "맞춰야 할 공", new Vector2(0, 250));
+                Debug.Log("Created missing UI: GuideText");
+            }
+
+            // TimerText가 없으면 생성
+            GameObject timerText = FindInMultipleCanvases(gameCanvas, null, "Timer", "TimerText", "타이머");
+            if (timerText == null)
+            {
+                timerText = CreateTextElement(gameCanvas.transform, "TimerText", "01:00", new Vector2(0, 300));
+                Debug.Log("Created missing UI: TimerText");
+            }
+
+            // FinalScoreText가 없으면 생성 (GameOverText와 별도로)
+            GameObject finalScoreText = FindChildRecursive(gameCanvas.transform, "FinalScoreText");
+            GameObject gameOverText = FindChildRecursive(gameCanvas.transform, "GameOverText");
+            if (finalScoreText == null && gameOverText == null)
+            {
+                finalScoreText = CreateTextElement(gameCanvas.transform, "FinalScoreText", "최종 점수: 0", new Vector2(0, -100));
+                Debug.Log("Created missing UI: FinalScoreText");
+            }
+
+            // StartButton이 없으면 생성
+            GameObject startButton = FindInMultipleCanvases(gameCanvas, null, "StartButton", "Start", "시작");
+            if (startButton == null)
+            {
+                startButton = CreateButtonElement(gameCanvas.transform, "StartButton", "시작", new Vector2(0, 0));
+                Debug.Log("Created missing UI: StartButton");
+            }
+
+            // RestartButton이 없으면 생성
+            GameObject restartButton = FindInMultipleCanvases(gameCanvas, null, "RestartButton", "Restart", "재시작");
+            if (restartButton == null)
+            {
+                restartButton = CreateButtonElement(gameCanvas.transform, "RestartButton", "재시작", new Vector2(0, -80));
+                restartButton.SetActive(false); // 초기에는 비활성화
+                Debug.Log("Created missing UI: RestartButton");
+            }
+        }
+
+        /// <summary>
+        /// 버튼 UI 요소 생성
+        /// </summary>
+        private static GameObject CreateButtonElement(Transform parent, string name, string buttonText, Vector2 position)
+        {
+            GameObject buttonObj = new GameObject(name);
+            buttonObj.transform.SetParent(parent);
+            buttonObj.layer = LayerMask.NameToLayer("UI");
+
+            // RectTransform 설정
+            var rectTransform = buttonObj.AddComponent<RectTransform>();
+            rectTransform.anchoredPosition = position;
+            rectTransform.sizeDelta = new Vector2(200, 60);
+            rectTransform.localScale = Vector3.one;
+
+            // Image (버튼 배경)
+            var image = buttonObj.AddComponent<UnityEngine.UI.Image>();
+            image.color = new Color(0.2f, 0.6f, 0.9f, 1f);
+
+            // Button 컴포넌트
+            var button = buttonObj.AddComponent<UnityEngine.UI.Button>();
+            button.targetGraphic = image;
+
+            // 텍스트 자식 오브젝트 생성
+            GameObject textChild = new GameObject("Text");
+            textChild.transform.SetParent(buttonObj.transform);
+            textChild.layer = LayerMask.NameToLayer("UI");
+
+            var textRect = textChild.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            textRect.localScale = Vector3.one;
+
+            // TextMeshProUGUI 추가 시도
+            var tmpType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            if (tmpType != null)
+            {
+                var tmpComponent = textChild.AddComponent(tmpType);
+                var textProperty = tmpType.GetProperty("text");
+                if (textProperty != null)
+                {
+                    textProperty.SetValue(tmpComponent, buttonText);
+                }
+
+                var fontSizeProperty = tmpType.GetProperty("fontSize");
+                if (fontSizeProperty != null)
+                {
+                    fontSizeProperty.SetValue(tmpComponent, 24f);
+                }
+
+                var alignmentProperty = tmpType.GetProperty("alignment");
+                if (alignmentProperty != null)
+                {
+                    alignmentProperty.SetValue(tmpComponent, 514); // Center
+                }
+
+                var colorProperty = tmpType.GetProperty("color");
+                if (colorProperty != null)
+                {
+                    colorProperty.SetValue(tmpComponent, Color.white);
+                }
+            }
+            else
+            {
+                var textComponent = textChild.AddComponent<UnityEngine.UI.Text>();
+                textComponent.text = buttonText;
+                textComponent.fontSize = 24;
+                textComponent.alignment = TextAnchor.MiddleCenter;
+                textComponent.color = Color.white;
+            }
+
+            EditorUtility.SetDirty(buttonObj);
+            return buttonObj;
+        }
+
+        /// <summary>
+        /// TextMeshPro UI 요소 생성
+        /// </summary>
+        private static GameObject CreateTextElement(Transform parent, string name, string defaultText, Vector2 position)
+        {
+            GameObject textObj = new GameObject(name);
+            textObj.transform.SetParent(parent);
+            textObj.layer = LayerMask.NameToLayer("UI");
+
+            // RectTransform 설정
+            var rectTransform = textObj.AddComponent<RectTransform>();
+            rectTransform.anchoredPosition = position;
+            rectTransform.sizeDelta = new Vector2(400, 100);
+            rectTransform.localScale = Vector3.one;
+
+            // TextMeshProUGUI 추가 시도 (TMPro가 있는 경우)
+            var tmpType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            if (tmpType != null)
+            {
+                var tmpComponent = textObj.AddComponent(tmpType);
+                var textProperty = tmpType.GetProperty("text");
+                if (textProperty != null)
+                {
+                    textProperty.SetValue(tmpComponent, defaultText);
+                }
+
+                var fontSizeProperty = tmpType.GetProperty("fontSize");
+                if (fontSizeProperty != null)
+                {
+                    fontSizeProperty.SetValue(tmpComponent, 36f);
+                }
+
+                var alignmentProperty = tmpType.GetProperty("alignment");
+                if (alignmentProperty != null)
+                {
+                    // TextAlignmentOptions.Center = 514
+                    alignmentProperty.SetValue(tmpComponent, 514);
+                }
+            }
+            else
+            {
+                // 폴백: 기본 UI.Text
+                var textComponent = textObj.AddComponent<UnityEngine.UI.Text>();
+                textComponent.text = defaultText;
+                textComponent.fontSize = 36;
+                textComponent.alignment = TextAnchor.MiddleCenter;
+                textComponent.color = Color.white;
+            }
+
+            EditorUtility.SetDirty(textObj);
+            return textObj;
+        }
+
+        /// <summary>
+        /// UI 구조를 정리하여 패널별로 분리
+        /// StartUIPanel, GameUIPanel, GameOverUIPanel 생성 및 UI 요소 재배치
+        /// </summary>
+        [MenuItem(MENU_PATH + "/Organize UI Structure", false, 50)]
+        public static void OrganizeUIStructure()
+        {
+            Debug.Log("=== Organizing UI Structure ===");
+
+            GameObject gameCanvas = GameObject.Find(GAME_CANVAS_NAME);
+            if (gameCanvas == null)
+            {
+                Debug.LogError("GameCanvas not found!");
+                return;
+            }
+
+            // 1. 패널 오브젝트 생성 또는 찾기
+            GameObject startUIPanel = FindOrCreateUIPanel(gameCanvas.transform, "StartUIPanel");
+            GameObject gameUIPanel = FindOrCreateUIPanel(gameCanvas.transform, "GameUIPanel");
+            GameObject gameOverUIPanel = FindOrCreateUIPanel(gameCanvas.transform, "GameOverUIPanel");
+
+            // 2. UI 요소들을 적절한 패널로 이동
+            // StartUIPanel: StartButton
+            MoveUIElementToPanel(gameCanvas.transform, startUIPanel.transform, "StartButton", "Start", "시작");
+
+            // GameUIPanel: Score, Timer, GuideText, BallGuide들
+            MoveUIElementToPanel(gameCanvas.transform, gameUIPanel.transform, "Score", "ScoreText", "점수");
+            MoveUIElementToPanel(gameCanvas.transform, gameUIPanel.transform, "Timer", "TimerText", "타이머");
+            MoveUIElementToPanel(gameCanvas.transform, gameUIPanel.transform, "GuideText", "Guide", "가이드");
+
+            // BallGuide 오브젝트들도 GameUIPanel로 이동
+            foreach (var ballType in BallTypes)
+            {
+                MoveUIElementToPanel(gameCanvas.transform, gameUIPanel.transform, ballType);
+            }
+            foreach (var ballTypeKr in BallTypesKorean)
+            {
+                MoveUIElementToPanel(gameCanvas.transform, gameUIPanel.transform, ballTypeKr);
+            }
+
+            // GameOverUIPanel: GameOver, FinalScore, RestartButton
+            MoveUIElementToPanel(gameCanvas.transform, gameOverUIPanel.transform, "GameOver", "GameOverText", "게임종료");
+            MoveUIElementToPanel(gameCanvas.transform, gameOverUIPanel.transform, "FinalScore", "FinalScoreText");
+            MoveUIElementToPanel(gameCanvas.transform, gameOverUIPanel.transform, "RestartButton", "Restart", "재시작");
+
+            // 3. 초기 상태 설정
+            startUIPanel.SetActive(true);
+            gameUIPanel.SetActive(false);
+            gameOverUIPanel.SetActive(false);
+
+            // 4. GameManager Injection 업데이트
+            UpdateGameManagerUIInjections(startUIPanel, gameUIPanel, gameOverUIPanel);
+
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+
+            Debug.Log("=== UI Structure organized ===");
+            Debug.Log($"  StartUIPanel: {startUIPanel.transform.childCount} children");
+            Debug.Log($"  GameUIPanel: {gameUIPanel.transform.childCount} children");
+            Debug.Log($"  GameOverUIPanel: {gameOverUIPanel.transform.childCount} children");
+
+            EditorUtility.DisplayDialog("UI Structure Organized",
+                $"UI 구조가 정리되었습니다!\n\n" +
+                $"• StartUIPanel: {startUIPanel.transform.childCount}개 요소\n" +
+                $"• GameUIPanel: {gameUIPanel.transform.childCount}개 요소\n" +
+                $"• GameOverUIPanel: {gameOverUIPanel.transform.childCount}개 요소\n\n" +
+                "씬을 저장하세요 (Ctrl+S)", "OK");
+        }
+
+        /// <summary>
+        /// UI 패널 찾기 또는 생성
+        /// </summary>
+        private static GameObject FindOrCreateUIPanel(Transform parent, string panelName)
+        {
+            // 이미 존재하는지 확인
+            GameObject panel = FindChildRecursive(parent, panelName);
+            if (panel != null)
+            {
+                Debug.Log($"Found existing panel: {panelName}");
+                return panel;
+            }
+
+            // 새로 생성
+            panel = new GameObject(panelName);
+            panel.transform.SetParent(parent);
+            panel.layer = LayerMask.NameToLayer("UI");
+
+            // RectTransform 추가 (Canvas 자식이므로 필요)
+            var rectTransform = panel.AddComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+            rectTransform.localScale = Vector3.one;
+            rectTransform.localPosition = Vector3.zero;
+
+            Debug.Log($"Created new panel: {panelName}");
+            EditorUtility.SetDirty(panel);
+            return panel;
+        }
+
+        /// <summary>
+        /// UI 요소를 지정한 패널로 이동
+        /// </summary>
+        private static void MoveUIElementToPanel(Transform sourceParent, Transform targetPanel, params string[] searchNames)
+        {
+            foreach (var name in searchNames)
+            {
+                // sourceParent의 직접 자식에서만 찾기 (이미 패널 안에 있는 것 제외)
+                for (int i = 0; i < sourceParent.childCount; i++)
+                {
+                    var child = sourceParent.GetChild(i);
+
+                    // 이미 패널인 경우 스킵
+                    if (child.name == "StartUIPanel" || child.name == "GameUIPanel" || child.name == "GameOverUIPanel")
+                        continue;
+
+                    if (child.name == name || child.name.Contains(name))
+                    {
+                        // 이미 대상 패널의 자식인지 확인
+                        if (child.parent == targetPanel)
+                            continue;
+
+                        child.SetParent(targetPanel);
+                        Debug.Log($"Moved '{child.name}' to {targetPanel.name}");
+                        EditorUtility.SetDirty(child.gameObject);
+                        return; // 첫 번째 매치만 이동
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// GameManager의 UI Injection을 업데이트
+        /// </summary>
+        private static void UpdateGameManagerUIInjections(GameObject startUIPanel, GameObject gameUIPanel, GameObject gameOverUIPanel)
+        {
+            GameObject gameManager = GameObject.Find(GAME_MANAGER_NAME);
+            if (gameManager == null)
+            {
+                Debug.LogWarning("GameManager not found, skipping injection update");
+                return;
+            }
+
+            var luaBehaviour = gameManager.GetComponent<VivenLuaBehaviour>();
+            if (luaBehaviour == null)
+            {
+                Debug.LogWarning("VivenLuaBehaviour not found on GameManager");
+                return;
+            }
+
+            EnsureInjectionInitialized(luaBehaviour);
+            var injection = luaBehaviour.injection;
+
+            // 패널 Injection 업데이트 (기존 값 덮어쓰기)
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "StartUIPanel", startUIPanel);
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "GameUIPanel", gameUIPanel);
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "GameOverUIPanel", gameOverUIPanel);
+
+            // 버튼들도 새 위치에서 찾아서 업데이트
+            GameObject startButton = FindChildRecursive(startUIPanel.transform, "StartButton");
+            if (startButton == null) startButton = FindChildRecursive(startUIPanel.transform, "Start");
+            if (startButton == null) startButton = FindChildRecursive(startUIPanel.transform, "시작");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "StartButtonObject", startButton);
+
+            GameObject restartButton = FindChildRecursive(gameOverUIPanel.transform, "RestartButton");
+            if (restartButton == null) restartButton = FindChildRecursive(gameOverUIPanel.transform, "Restart");
+            if (restartButton == null) restartButton = FindChildRecursive(gameOverUIPanel.transform, "재시작");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "RestartButtonObject", restartButton);
+
+            // Score, Timer, GuideText도 GameUIPanel에서 찾아서 업데이트
+            GameObject scoreText = FindChildRecursive(gameUIPanel.transform, "Score");
+            if (scoreText == null) scoreText = FindChildRecursive(gameUIPanel.transform, "ScoreText");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "ScoreTextObject", scoreText);
+
+            GameObject timerText = FindChildRecursive(gameUIPanel.transform, "Timer");
+            if (timerText == null) timerText = FindChildRecursive(gameUIPanel.transform, "TimerText");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "TimerTextObject", timerText);
+
+            GameObject guideText = FindChildRecursive(gameUIPanel.transform, "GuideText");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "GuideTextObject", guideText);
+
+            // FinalScore도 GameOverUIPanel에서 찾기 (여러 이름 검색)
+            GameObject finalScore = FindChildRecursive(gameOverUIPanel.transform, "FinalScore");
+            if (finalScore == null) finalScore = FindChildRecursive(gameOverUIPanel.transform, "FinalScoreText");
+            if (finalScore == null) finalScore = FindChildRecursive(gameOverUIPanel.transform, "GameOver");
+            if (finalScore == null) finalScore = FindChildRecursive(gameOverUIPanel.transform, "GameOverText");
+            if (finalScore == null) finalScore = FindChildRecursive(gameOverUIPanel.transform, "게임종료");
+            UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, "FinalScoreTextObject", finalScore);
+
+            // BallGuide들도 GameUIPanel에서 찾아서 업데이트
+            for (int i = 0; i < BallTypes.Length; i++)
+            {
+                string ballType = BallTypes[i];
+                string koreanName = BallTypesKorean[i];
+
+                GameObject ballGuide = FindChildRecursive(gameUIPanel.transform, ballType);
+                if (ballGuide == null) ballGuide = FindChildRecursive(gameUIPanel.transform, koreanName);
+
+                if (ballGuide != null)
+                {
+                    UpdateOrAddGameObjectInjection(ref injection.gameObjectValues, $"BallGuide_{ballType}", ballGuide);
+                }
+            }
+
+            EditorUtility.SetDirty(luaBehaviour);
+            Debug.Log("GameManager UI injections updated");
+        }
+
+        /// <summary>
+        /// GameObject Injection 업데이트 또는 추가 (기존 값 덮어쓰기)
+        /// </summary>
+        private static void UpdateOrAddGameObjectInjection(ref GameObjectValue[] array, string name, GameObject value)
+        {
+            // 기존 항목 검색 및 업데이트
+            if (array != null)
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (array[i].name == name)
+                    {
+                        array[i].value = value;
+                        return;
+                    }
+                }
+            }
+
+            // 새 항목 추가
+            var newEntry = new GameObjectValue { name = name, value = value };
+
+            if (array == null)
+            {
+                array = new GameObjectValue[] { newEntry };
+            }
+            else
+            {
+                var list = new List<GameObjectValue>(array);
+                list.Add(newEntry);
+                array = list.ToArray();
+            }
         }
 
         #endregion
@@ -536,14 +997,16 @@ namespace ConveyorGunGame.Editor
         }
 
         /// <summary>
-        /// 공 종류별 TargetPool 생성
-        /// 씬에 있는 실제 공 오브젝트를 템플릿으로 복제
+        /// 공 종류별 TargetPool 설정
+        /// 1. TargetPool이 비어있으면 씬에서 공 템플릿 찾아서 복제
+        /// 2. 기존 공 오브젝트에 필요한 컴포넌트만 추가 (Rigidbody, VivenLuaBehaviour)
+        /// 3. 기존 Mesh, Material, TMP_Text 등은 유지
         /// </summary>
         public static void CreateTargetPoolByBallType(int countPerType)
         {
-            Debug.Log("=== Creating Target Pool by Ball Type ===");
+            Debug.Log("=== Setting up Target Pool by Ball Type ===");
 
-            // TargetPool 부모 오브젝트
+            // TargetPool 부모 오브젝트 찾기/생성
             GameObject targetPool = GameObject.Find(TARGET_POOL_NAME);
             if (targetPool == null)
             {
@@ -551,122 +1014,300 @@ namespace ConveyorGunGame.Editor
                 Debug.Log("Created: " + TARGET_POOL_NAME);
             }
 
-            // 씬에서 각 공 종류의 템플릿 찾기
-            Dictionary<string, GameObject> ballTemplates = new Dictionary<string, GameObject>();
-
-            for (int i = 0; i < BallTypes.Length; i++)
+            // TargetPool이 비어있으면 씬에서 공 템플릿 찾아서 복제
+            if (targetPool.transform.childCount == 0)
             {
-                string englishName = BallTypes[i];
-                string koreanName = BallTypesKorean[i];
-
-                // 영어 이름으로 먼저 찾고, 없으면 한글 이름으로 찾기
-                GameObject template = GameObject.Find(englishName);
-                if (template == null)
-                {
-                    template = GameObject.Find(koreanName);
-                }
-
-                if (template != null)
-                {
-                    ballTemplates[englishName] = template;
-                    Debug.Log($"Found template: {englishName} ({template.name})");
-                }
-                else
-                {
-                    Debug.LogWarning($"Ball template not found: {englishName} / {koreanName}");
-                }
+                Debug.Log("TargetPool is empty, searching for ball templates in scene...");
+                PopulateTargetPoolFromScene(targetPool, countPerType);
             }
 
-            // 각 공 종류별로 풀 오브젝트 생성
+            int setupCount = 0;
+            int rigidbodyAdded = 0;
+
+            // TargetPool의 모든 자식 오브젝트 처리
+            for (int i = 0; i < targetPool.transform.childCount; i++)
+            {
+                GameObject target = targetPool.transform.GetChild(i).gameObject;
+                SetupTargetObject(target, ref setupCount, ref rigidbodyAdded);
+            }
+
+            Debug.Log($"=== Target Pool Setup Complete ===");
+            Debug.Log($"  Total targets: {targetPool.transform.childCount}");
+            Debug.Log($"  Configured: {setupCount}");
+            Debug.Log($"  Rigidbodies added: {rigidbodyAdded}");
+            EditorUtility.SetDirty(targetPool);
+        }
+
+        /// <summary>
+        /// TargetPool에 공 오브젝트 생성 (템플릿 없이 새로 생성)
+        /// </summary>
+        private static void PopulateTargetPoolFromScene(GameObject targetPool, int countPerType)
+        {
             int totalCreated = 0;
+
+            // 각 공 타입별로 오브젝트 생성
             foreach (var ballType in BallTypes)
             {
-                // 이미 존재하는 해당 타입 개수 세기
-                int existingCount = 0;
-                for (int i = 0; i < targetPool.transform.childCount; i++)
+                for (int i = 0; i < countPerType; i++)
                 {
-                    if (targetPool.transform.GetChild(i).name.StartsWith(ballType + "_"))
+                    string newName = $"{ballType}_{i}";
+
+                    // 이미 존재하는지 확인
+                    bool exists = false;
+                    for (int j = 0; j < targetPool.transform.childCount; j++)
                     {
-                        existingCount++;
-                    }
-                }
-
-                // 부족한 만큼 생성
-                int toCreate = countPerType - existingCount;
-                if (toCreate <= 0)
-                {
-                    Debug.Log($"{ballType}: Already has {existingCount} (need {countPerType})");
-                    continue;
-                }
-
-                GameObject template = null;
-                ballTemplates.TryGetValue(ballType, out template);
-
-                for (int i = 0; i < toCreate; i++)
-                {
-                    int index = existingCount + i;
-                    string objName = $"{ballType}_{index}";
-
-                    GameObject target;
-
-                    if (template != null)
-                    {
-                        // 템플릿 복제
-                        target = Object.Instantiate(template, targetPool.transform);
-                        target.name = objName;
-
-                        // 위치 초기화
-                        target.transform.localPosition = Vector3.zero;
-                        target.transform.localRotation = Quaternion.identity;
-                    }
-                    else
-                    {
-                        // 템플릿 없으면 기본 큐브 생성
-                        target = CreatePoolObject(objName, targetPool.transform);
-
-                        if (target.GetComponent<MeshFilter>() == null)
+                        if (targetPool.transform.GetChild(j).name == newName)
                         {
-                            var meshFilter = target.AddComponent<MeshFilter>();
-                            meshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
-
-                            var meshRenderer = target.AddComponent<MeshRenderer>();
-                            meshRenderer.sharedMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+                            exists = true;
+                            break;
                         }
-
-                        target.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
                     }
 
-                    // VivenLuaBehaviour 설정
-                    SetupVivenLuaBehaviour(target, TARGET_SCRIPT, "Objects");
+                    if (exists) continue;
 
-                    // 태그 설정
-                    SetOrCreateTag(target, "Target");
-
-                    // Collider 추가 (없으면)
-                    if (target.GetComponent<Collider>() == null)
-                    {
-                        var col = target.AddComponent<SphereCollider>();
-                        col.isTrigger = true;
-                        col.radius = 0.15f;
-                    }
-
-                    // 공 타입을 StringValue로 저장
-                    var luaBehaviour = target.GetComponent<VivenLuaBehaviour>();
-                    if (luaBehaviour != null)
-                    {
-                        EnsureInjectionInitialized(luaBehaviour);
-                        EnsureStringInjection(ref luaBehaviour.injection.stringValue, "ballType", ballType);
-                        EditorUtility.SetDirty(luaBehaviour);
-                    }
+                    // 새 GameObject 생성
+                    GameObject newTarget = new GameObject(newName);
+                    newTarget.transform.SetParent(targetPool.transform);
+                    newTarget.transform.localPosition = Vector3.zero;
+                    newTarget.transform.localRotation = Quaternion.identity;
+                    newTarget.transform.localScale = Vector3.one * GetBallScale(ballType);
 
                     totalCreated++;
                 }
 
-                Debug.Log($"{ballType}: Created {toCreate} new targets (total: {existingCount + toCreate})");
+                Debug.Log($"Created {countPerType} instances of {ballType}");
             }
 
-            Debug.Log($"=== Target Pool Complete: {targetPool.transform.childCount} total targets ({totalCreated} new) ===");
-            EditorUtility.SetDirty(targetPool);
+            Debug.Log($"Total targets created: {totalCreated}");
+        }
+
+        /// <summary>
+        /// 공 타입별 크기 반환
+        /// </summary>
+        private static float GetBallScale(string ballType)
+        {
+            switch (ballType)
+            {
+                case "GolfBall":    return 0.3f;   // 골프공 - 작음
+                case "TennisBall":  return 0.35f;  // 테니스공 - 작음
+                case "BaseBall":    return 0.35f;  // 야구공 - 작음
+                case "SoccerBall":  return 0.5f;   // 축구공 - 중간
+                case "VolleyBall":  return 0.5f;   // 배구공 - 중간
+                case "RugbyBall":   return 0.5f;   // 럭비공 - 중간
+                case "BowlingBall": return 0.55f;  // 볼링공 - 큼
+                case "BasketBall":  return 0.6f;   // 농구공 - 큼
+                case "BeachBall":   return 0.6f;   // 비치볼 - 큼
+                default:            return 0.4f;
+            }
+        }
+
+        /// <summary>
+        /// TextMeshPro 컴포넌트 제거 (자식 포함)
+        /// 가이드 텍스트는 GameUIPanel에서 별도 관리하므로 공에서는 제거
+        /// </summary>
+        private static void RemoveTextMeshProComponents(GameObject target)
+        {
+            // TMP_Text 타입 찾기 (TMPro 네임스페이스)
+            var tmpType = System.Type.GetType("TMPro.TMP_Text, Unity.TextMeshPro");
+            var tmpUGUIType = System.Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro");
+            var tmp3DType = System.Type.GetType("TMPro.TextMeshPro, Unity.TextMeshPro");
+
+            // 자식 오브젝트들도 포함해서 모든 TMP 컴포넌트 찾기
+            var allComponents = target.GetComponentsInChildren<Component>(true);
+            var toRemove = new List<Component>();
+
+            foreach (var comp in allComponents)
+            {
+                if (comp == null) continue;
+                var compType = comp.GetType();
+
+                // TextMeshPro 관련 컴포넌트인지 확인
+                if ((tmpType != null && tmpType.IsAssignableFrom(compType)) ||
+                    (tmpUGUIType != null && tmpUGUIType.IsAssignableFrom(compType)) ||
+                    (tmp3DType != null && tmp3DType.IsAssignableFrom(compType)) ||
+                    compType.Name.Contains("TextMeshPro") ||
+                    compType.Name.Contains("TMP_"))
+                {
+                    toRemove.Add(comp);
+                }
+            }
+
+            // TMP 컴포넌트가 있는 자식 오브젝트는 통째로 삭제 (단, MeshRenderer가 있는 자식은 보호)
+            var childrenToRemove = new List<GameObject>();
+            for (int i = 0; i < target.transform.childCount; i++)
+            {
+                var child = target.transform.GetChild(i).gameObject;
+
+                // MeshRenderer가 있는 자식은 삭제하지 않음 (공의 메시 보호)
+                if (child.GetComponentInChildren<MeshRenderer>(true) != null ||
+                    child.GetComponentInChildren<MeshFilter>(true) != null ||
+                    child.GetComponentInChildren<SkinnedMeshRenderer>(true) != null)
+                {
+                    continue;
+                }
+
+                // 자식이 TMP 전용 오브젝트인지 확인 (Canvas나 Text 오브젝트)
+                if (child.name.Contains("Text") || child.name.Contains("TMP") ||
+                    child.name.Contains("Canvas") || child.name.Contains("Label"))
+                {
+                    var tmpComps = child.GetComponentsInChildren<Component>(true);
+                    foreach (var tc in tmpComps)
+                    {
+                        if (tc != null && (tc.GetType().Name.Contains("TextMeshPro") ||
+                            tc.GetType().Name.Contains("TMP_")))
+                        {
+                            childrenToRemove.Add(child);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 자식 오브젝트 삭제
+            foreach (var child in childrenToRemove)
+            {
+                Debug.Log($"Removing TMP child object: {child.name} from {target.name}");
+                Object.DestroyImmediate(child);
+            }
+
+            // 남은 TMP 컴포넌트 직접 제거
+            foreach (var comp in toRemove)
+            {
+                if (comp != null && comp.gameObject != null)
+                {
+                    Debug.Log($"Removing TMP component from {target.name}");
+                    Object.DestroyImmediate(comp);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 개별 타겟 오브젝트 설정 (Rigidbody, Script, Injection 등)
+        /// </summary>
+        private static void SetupTargetObject(GameObject target, ref int setupCount, ref int rigidbodyAdded)
+        {
+            string targetName = target.name;
+
+            // 공 타입 감지
+            string detectedBallType = null;
+            foreach (var ballType in BallTypes)
+            {
+                if (targetName.StartsWith(ballType) || targetName.Contains(ballType))
+                {
+                    detectedBallType = ballType;
+                    break;
+                }
+            }
+
+            // 한글 이름으로도 체크
+            if (detectedBallType == null)
+            {
+                for (int j = 0; j < BallTypesKorean.Length; j++)
+                {
+                    if (targetName.Contains(BallTypesKorean[j]))
+                    {
+                        detectedBallType = BallTypes[j];
+                        break;
+                    }
+                }
+            }
+
+            if (detectedBallType == null)
+            {
+                Debug.LogWarning($"Unknown ball type for: {targetName}");
+                detectedBallType = "Unknown";
+            }
+
+            // VivenLuaBehaviour 설정 (없으면 추가)
+            var luaBehaviour = target.GetComponent<VivenLuaBehaviour>();
+            if (luaBehaviour == null)
+            {
+                SetupVivenLuaBehaviour(target, TARGET_SCRIPT, "Objects");
+                luaBehaviour = target.GetComponent<VivenLuaBehaviour>();
+            }
+
+            // ballType Injection 설정
+            if (luaBehaviour != null)
+            {
+                EnsureInjectionInitialized(luaBehaviour);
+                EnsureStringInjection(ref luaBehaviour.injection.stringValue, "ballType", detectedBallType);
+                EditorUtility.SetDirty(luaBehaviour);
+            }
+
+            // 태그 설정
+            SetOrCreateTag(target, "Target");
+
+            // Rigidbody 추가 (없으면) - 컨베이어 벨트 물리 이동용
+            var rb = target.GetComponent<Rigidbody>();
+            if (rb == null)
+            {
+                rb = target.AddComponent<Rigidbody>();
+                rigidbodyAdded++;
+            }
+            rb.useGravity = true;
+            rb.isKinematic = false;
+            rb.mass = 1f;
+            rb.linearDamping = 0.5f;
+            rb.angularDamping = 0.5f;
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+            // Collider 설정 (기존 것 유지, isTrigger만 확인)
+            var colliders = target.GetComponents<Collider>();
+            if (colliders.Length > 0)
+            {
+                // 첫 번째 콜라이더는 물리용으로 설정
+                colliders[0].isTrigger = false;
+            }
+            else
+            {
+                // 콜라이더가 없으면 추가
+                var col = target.AddComponent<SphereCollider>();
+                col.isTrigger = false;
+                col.radius = 0.15f;
+            }
+
+            // MeshFilter/MeshRenderer 설정 (없으면 템플릿에서 복사)
+            SetupMeshFromTemplate(target, detectedBallType);
+
+            setupCount++;
+            EditorUtility.SetDirty(target);
+        }
+
+        /// <summary>
+        /// MeshFilter/MeshRenderer 추가 (없으면 기본 Sphere)
+        /// </summary>
+        private static void SetupMeshFromTemplate(GameObject target, string ballType)
+        {
+            // 이미 MeshRenderer가 있으면 스킵
+            if (target.GetComponentInChildren<MeshRenderer>(true) != null ||
+                target.GetComponentInChildren<SkinnedMeshRenderer>(true) != null)
+            {
+                return;
+            }
+
+            // 임시 Sphere 생성해서 mesh 가져오기
+            var tempSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            var sphereMesh = tempSphere.GetComponent<MeshFilter>().sharedMesh;
+            var defaultMat = tempSphere.GetComponent<MeshRenderer>().sharedMaterial;
+            Object.DestroyImmediate(tempSphere);
+
+            // MeshFilter 추가
+            var mf = target.GetComponent<MeshFilter>();
+            if (mf == null)
+            {
+                mf = target.AddComponent<MeshFilter>();
+            }
+            mf.sharedMesh = sphereMesh;
+
+            // MeshRenderer 추가
+            var mr = target.GetComponent<MeshRenderer>();
+            if (mr == null)
+            {
+                mr = target.AddComponent<MeshRenderer>();
+            }
+            mr.sharedMaterial = defaultMat;
+
+            Debug.Log($"{target.name}: Added Sphere mesh");
         }
 
         /// <summary>
@@ -694,12 +1335,30 @@ namespace ConveyorGunGame.Editor
                 // 태그 설정
                 SetOrCreateTag(target, "Target");
 
-                // Collider 추가 (없으면)
-                if (target.GetComponent<Collider>() == null)
+                // Rigidbody 추가 (컨베이어 벨트 물리 이동용)
+                var rb = target.GetComponent<Rigidbody>();
+                if (rb == null)
                 {
-                    var col = target.AddComponent<BoxCollider>();
-                    col.isTrigger = true;
-                    col.size = new Vector3(0.5f, 0.5f, 0.5f);
+                    rb = target.AddComponent<Rigidbody>();
+                }
+                rb.useGravity = true;
+                rb.isKinematic = false;
+                rb.mass = 1f;
+                rb.linearDamping = 0.5f;
+                rb.angularDamping = 0.5f;
+                rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+
+                // Collider 추가 (물리용 - isTrigger = false)
+                var col = target.GetComponent<Collider>();
+                if (col == null)
+                {
+                    var boxCol = target.AddComponent<BoxCollider>();
+                    boxCol.isTrigger = false;  // 물리 충돌용
+                    boxCol.size = new Vector3(0.3f, 0.3f, 0.3f);
+                }
+                else
+                {
+                    col.isTrigger = false;  // 기존 콜라이더도 물리용으로
                 }
 
                 // 시각적 표시용 큐브 (없으면)
@@ -762,11 +1421,17 @@ namespace ConveyorGunGame.Editor
                 // 시각적 표시용 구체
                 if (bullet.GetComponent<MeshFilter>() == null)
                 {
+                    // CreatePrimitive로 Sphere mesh 가져오기
+                    var tempSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    var sphereMesh = tempSphere.GetComponent<MeshFilter>().sharedMesh;
+                    var defaultMat = tempSphere.GetComponent<MeshRenderer>().sharedMaterial;
+                    Object.DestroyImmediate(tempSphere);
+
                     var meshFilter = bullet.AddComponent<MeshFilter>();
-                    meshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
+                    meshFilter.sharedMesh = sphereMesh;
 
                     var meshRenderer = bullet.AddComponent<MeshRenderer>();
-                    meshRenderer.sharedMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+                    meshRenderer.sharedMaterial = defaultMat;
                 }
 
                 bullet.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
@@ -800,8 +1465,198 @@ namespace ConveyorGunGame.Editor
 
             SetupVivenLuaBehaviour(gun, SHOOTING_GUN_SCRIPT, "Objects");
 
+            // ShootSound 오브젝트가 없으면 생성
+            GameObject shootSound = FindChildRecursive(gun.transform, "ShootSound");
+            if (shootSound == null)
+            {
+                // Gun 하위에 AudioSource가 있는지 먼저 확인
+                var existingAudio = gun.GetComponentInChildren<AudioSource>();
+                if (existingAudio != null)
+                {
+                    shootSound = existingAudio.gameObject;
+                    shootSound.name = "ShootSound";
+                    Debug.Log("Renamed existing AudioSource to ShootSound");
+                }
+                else
+                {
+                    // 새로 생성
+                    shootSound = new GameObject("ShootSound");
+                    shootSound.transform.SetParent(gun.transform);
+                    shootSound.transform.localPosition = Vector3.zero;
+
+                    var audioSource = shootSound.AddComponent<AudioSource>();
+                    audioSource.playOnAwake = false;
+                    audioSource.spatialBlend = 1f; // 3D 사운드
+
+                    Debug.Log("Created ShootSound AudioSource in Gun");
+                }
+            }
+
             Debug.Log("Gun setup completed: " + GUN_NAME);
             EditorUtility.SetDirty(gun);
+        }
+
+        #endregion
+
+        #region Setup Conveyor Belt
+
+        /// <summary>
+        /// 컨베이어 벨트 설정
+        /// </summary>
+        public static void SetupConveyorBelt()
+        {
+            // 씬에서 컨베이어 벨트 오브젝트 찾기
+            string[] possibleNames = { "ConveyorBelt", "Conveyor", "Belt", "컨베이어", "컨베이어벨트", "ConveyorBeltTrigger" };
+            GameObject conveyorBelt = null;
+
+            foreach (var name in possibleNames)
+            {
+                conveyorBelt = GameObject.Find(name);
+                if (conveyorBelt != null) break;
+            }
+
+            // 못 찾으면 SpawnPoint 근처에 생성
+            if (conveyorBelt == null)
+            {
+                GameObject spawnPoint = GameObject.Find(SPAWN_POINT_NAME);
+                if (spawnPoint == null)
+                {
+                    Debug.LogWarning("SpawnPoint not found, cannot create ConveyorBelt!");
+                    return;
+                }
+
+                // 컨베이어 벨트 트리거 영역 생성
+                conveyorBelt = new GameObject("ConveyorBelt");
+                conveyorBelt.transform.position = spawnPoint.transform.position + new Vector3(0, -0.5f, 2f);
+                conveyorBelt.transform.rotation = Quaternion.identity;
+
+                Debug.Log("Created ConveyorBelt object");
+            }
+
+            // Box Collider 추가 (isTrigger = true)
+            var collider = conveyorBelt.GetComponent<BoxCollider>();
+            if (collider == null)
+            {
+                collider = conveyorBelt.AddComponent<BoxCollider>();
+            }
+            collider.isTrigger = true;
+            collider.size = new Vector3(3f, 1f, 10f); // 넓은 트리거 영역
+            collider.center = Vector3.zero;
+
+            // VivenLuaBehaviour + ConveyorBelt 스크립트
+            SetupVivenLuaBehaviour(conveyorBelt, "ConveyorBelt", "Objects");
+
+            // Injection 설정
+            var luaBehaviour = conveyorBelt.GetComponent<VivenLuaBehaviour>();
+            if (luaBehaviour != null)
+            {
+                EnsureInjectionInitialized(luaBehaviour);
+                EnsureFloatInjection(ref luaBehaviour.injection.floatValue, "speed", 0.8f);
+
+                // direction Vector3 설정
+                if (luaBehaviour.injection.vector3Values == null)
+                    luaBehaviour.injection.vector3Values = new Vector3Value[0];
+
+                bool found = false;
+                for (int i = 0; i < luaBehaviour.injection.vector3Values.Length; i++)
+                {
+                    if (luaBehaviour.injection.vector3Values[i].name == "direction")
+                    {
+                        luaBehaviour.injection.vector3Values[i].value = new Vector3(0, 0, 1);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    var list = new List<Vector3Value>(luaBehaviour.injection.vector3Values);
+                    list.Add(new Vector3Value { name = "direction", value = new Vector3(0, 0, 1) });
+                    luaBehaviour.injection.vector3Values = list.ToArray();
+                }
+
+                EditorUtility.SetDirty(luaBehaviour);
+            }
+
+            Debug.Log($"ConveyorBelt setup completed: {conveyorBelt.name} (isTrigger={collider.isTrigger})");
+            EditorUtility.SetDirty(conveyorBelt);
+        }
+
+        /// <summary>
+        /// 공 수거 영역 설정 (컨베이어 벨트 끝)
+        /// </summary>
+        public static void SetupTargetCollector()
+        {
+            // 씬에서 찾기
+            string[] possibleNames = { "Props_Dustbin", "Dustbin", "TargetCollector", "Collector", "EndZone", "수거함", "쓰레기통" };
+            GameObject collector = null;
+
+            foreach (var name in possibleNames)
+            {
+                collector = GameObject.Find(name);
+                Debug.Log($"Searching for '{name}': {(collector != null ? "FOUND" : "not found")}");
+                if (collector != null) break;
+            }
+
+            // 못 찾으면 컨베이어 벨트 끝에 생성
+            if (collector == null)
+            {
+                GameObject conveyorBelt = GameObject.Find("ConveyorBelt");
+                Vector3 spawnPos = Vector3.zero;
+
+                if (conveyorBelt != null)
+                {
+                    // 컨베이어 벨트 끝 위치 (direction 방향으로 offset)
+                    var boxCol = conveyorBelt.GetComponent<BoxCollider>();
+                    float length = boxCol != null ? boxCol.size.z : 10f;
+                    spawnPos = conveyorBelt.transform.position + conveyorBelt.transform.forward * (length / 2 + 1f);
+                }
+                else
+                {
+                    GameObject spawnPoint = GameObject.Find(SPAWN_POINT_NAME);
+                    if (spawnPoint != null)
+                    {
+                        spawnPos = spawnPoint.transform.position + new Vector3(0, 0, 12f);
+                    }
+                }
+
+                collector = new GameObject("TargetCollector");
+                collector.transform.position = spawnPos;
+                collector.transform.rotation = Quaternion.identity;
+
+                Debug.Log("Created TargetCollector object");
+            }
+
+            // Box Collider 추가 (isTrigger = true)
+            var collider = collector.GetComponent<BoxCollider>();
+            if (collider == null)
+            {
+                collider = collector.AddComponent<BoxCollider>();
+            }
+            collider.isTrigger = true;
+            collider.size = new Vector3(4f, 3f, 2f); // 넓은 수거 영역
+            collider.center = Vector3.zero;
+
+            // VivenLuaBehaviour + TargetCollector 스크립트
+            SetupVivenLuaBehaviour(collector, "TargetCollector", "Objects");
+
+            // Injection 설정
+            var luaBehaviour = collector.GetComponent<VivenLuaBehaviour>();
+            if (luaBehaviour != null)
+            {
+                EnsureInjectionInitialized(luaBehaviour);
+
+                // GameManager, SpawnManager 참조
+                GameObject gameManager = GameObject.Find(GAME_MANAGER_NAME);
+                GameObject spawnManager = GameObject.Find(SPAWN_MANAGER_NAME);
+
+                EnsureGameObjectInjection(ref luaBehaviour.injection.gameObjectValues, "GameManagerObject", gameManager);
+                EnsureGameObjectInjection(ref luaBehaviour.injection.gameObjectValues, "SpawnManagerObject", spawnManager);
+
+                EditorUtility.SetDirty(luaBehaviour);
+            }
+
+            Debug.Log($"TargetCollector setup completed: {collector.name}");
+            EditorUtility.SetDirty(collector);
         }
 
         #endregion
@@ -866,52 +1721,55 @@ namespace ConveyorGunGame.Editor
             // GameObject Injections
             EnsureGameObjectInjection(ref injection.gameObjectValues, "SpawnManagerObject", spawnManager);
 
-            // UI 관련 (GameCanvas 하위에서 찾기) - 영어/한글 양쪽 검색
+            // Canvas_left도 검색 대상에 포함
+            GameObject canvasLeft = GameObject.Find("Canvas_left");
+
+            // UI 관련 (GameCanvas + Canvas_left 하위에서 찾기) - 영어/한글 양쪽 검색
             if (gameCanvas != null)
             {
                 // 점수 텍스트
-                GameObject scoreText = FindChildByMultipleNames(gameCanvas.transform, "Score", "ScoreText", "점수");
+                GameObject scoreText = FindInMultipleCanvases(gameCanvas, canvasLeft, "Score", "ScoreText", "점수");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "ScoreTextObject", scoreText);
 
                 // 타이머 텍스트
-                GameObject timerText = FindChildByMultipleNames(gameCanvas.transform, "Timer", "TimerText", "타이머");
+                GameObject timerText = FindInMultipleCanvases(gameCanvas, canvasLeft, "Timer", "TimerText", "타이머");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "TimerTextObject", timerText);
 
                 // 시작 UI 패널 (준비!)
-                GameObject startUIPanel = FindChildByMultipleNames(gameCanvas.transform, "StartUIPanel", "StartUI", "Ready", "준비!");
+                GameObject startUIPanel = FindInMultipleCanvases(gameCanvas, canvasLeft, "StartUIPanel", "StartUI", "Ready", "ReadyText", "준비!");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "StartUIPanel", startUIPanel);
 
                 // 게임 UI 패널
-                GameObject gameUIPanel = FindChildByMultipleNames(gameCanvas.transform, "GameUIPanel", "GameUI");
+                GameObject gameUIPanel = FindInMultipleCanvases(gameCanvas, canvasLeft, "GameUIPanel", "GameUI");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "GameUIPanel", gameUIPanel);
 
                 // 게임 오버 UI 패널
-                GameObject gameOverUIPanel = FindChildByMultipleNames(gameCanvas.transform, "GameOverUIPanel", "GameOverUI", "GameOver", "게임종료");
+                GameObject gameOverUIPanel = FindInMultipleCanvases(gameCanvas, canvasLeft, "GameOverUIPanel", "GameOverUI", "GameOver", "GameOverText", "게임종료");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "GameOverUIPanel", gameOverUIPanel);
 
                 // 시작 버튼
-                GameObject startButton = FindChildByMultipleNames(gameCanvas.transform, "StartButton", "Start", "시작");
+                GameObject startButton = FindInMultipleCanvases(gameCanvas, canvasLeft, "StartButton", "Start", "시작");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "StartButtonObject", startButton);
 
                 // 재시작 버튼
-                GameObject restartButton = FindChildByMultipleNames(gameCanvas.transform, "RestartButton", "Restart", "재시작");
+                GameObject restartButton = FindInMultipleCanvases(gameCanvas, canvasLeft, "RestartButton", "Restart", "재시작");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "RestartButtonObject", restartButton);
 
-                // 최종 점수 텍스트
-                GameObject finalScoreText = FindChildByMultipleNames(gameCanvas.transform, "FinalScore", "FinalScoreText");
+                // 최종 점수 텍스트 (GameOverText도 검색)
+                GameObject finalScoreText = FindInMultipleCanvases(gameCanvas, canvasLeft, "FinalScore", "FinalScoreText", "GameOverText", "게임종료");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "FinalScoreTextObject", finalScoreText);
 
                 // 가이드 텍스트 (현재 맞춰야 할 공 종류 표시)
-                GameObject guideText = FindChildByMultipleNames(gameCanvas.transform, "GuideText", "Guide", "가이드", "TargetGuide");
+                GameObject guideText = FindInMultipleCanvases(gameCanvas, canvasLeft, "GuideText", "Guide", "가이드", "TargetGuide");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "GuideTextObject", guideText);
 
-                // 공 종류별 가이드 텍스트 오브젝트들 (9종)
+                // 공 종류별 가이드 텍스트 오브젝트들 (9종) - GameCanvas와 Canvas_left 양쪽에서 검색
                 for (int i = 0; i < BallTypes.Length; i++)
                 {
                     string englishName = BallTypes[i];
                     string koreanName = BallTypesKorean[i];
 
-                    GameObject ballGuide = FindChildByMultipleNames(gameCanvas.transform, englishName, koreanName);
+                    GameObject ballGuide = FindInMultipleCanvases(gameCanvas, canvasLeft, englishName, koreanName);
                     if (ballGuide != null)
                     {
                         EnsureGameObjectInjection(ref injection.gameObjectValues, $"BallGuide_{englishName}", ballGuide);
@@ -928,6 +1786,28 @@ namespace ConveyorGunGame.Editor
 
             EditorUtility.SetDirty(luaBehaviour);
             Debug.Log("GameManager injection setup completed");
+        }
+
+        /// <summary>
+        /// 여러 캔버스에서 오브젝트 검색
+        /// </summary>
+        private static GameObject FindInMultipleCanvases(GameObject canvas1, GameObject canvas2, params string[] names)
+        {
+            // 첫 번째 캔버스에서 찾기
+            if (canvas1 != null)
+            {
+                var found = FindChildByMultipleNames(canvas1.transform, names);
+                if (found != null) return found;
+            }
+
+            // 두 번째 캔버스에서 찾기
+            if (canvas2 != null)
+            {
+                var found = FindChildByMultipleNames(canvas2.transform, names);
+                if (found != null) return found;
+            }
+
+            return null;
         }
 
         private static void SetupSpawnManagerInjection(GameObject spawnManager, GameObject spawnPoint,
@@ -1266,15 +2146,53 @@ namespace ConveyorGunGame.Editor
 
         private static void SetOrCreateTag(GameObject obj, string tagName)
         {
-            // 태그가 존재하는지 확인
+            // 태그가 존재하는지 확인하고 없으면 생성
+            if (!TagExists(tagName))
+            {
+                CreateTag(tagName);
+            }
+
             try
             {
                 obj.tag = tagName;
             }
-            catch
+            catch (System.Exception e)
             {
-                Debug.LogWarning($"Tag '{tagName}' does not exist. Please create it manually in Tags & Layers.");
+                Debug.LogWarning($"Failed to set tag '{tagName}': {e.Message}");
             }
+        }
+
+        private static bool TagExists(string tagName)
+        {
+            foreach (string tag in UnityEditorInternal.InternalEditorUtility.tags)
+            {
+                if (tag == tagName)
+                    return true;
+            }
+            return false;
+        }
+
+        private static void CreateTag(string tagName)
+        {
+            // TagManager 에셋 로드
+            var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            var tagsProp = tagManager.FindProperty("tags");
+
+            // 이미 존재하는지 다시 확인
+            for (int i = 0; i < tagsProp.arraySize; i++)
+            {
+                if (tagsProp.GetArrayElementAtIndex(i).stringValue == tagName)
+                {
+                    return; // 이미 존재함
+                }
+            }
+
+            // 새 태그 추가
+            tagsProp.InsertArrayElementAtIndex(tagsProp.arraySize);
+            tagsProp.GetArrayElementAtIndex(tagsProp.arraySize - 1).stringValue = tagName;
+            tagManager.ApplyModifiedProperties();
+
+            Debug.Log($"Created new tag: {tagName}");
         }
 
         #endregion

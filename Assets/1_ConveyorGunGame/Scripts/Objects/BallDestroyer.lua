@@ -43,7 +43,6 @@ end
 
 function start()
     destroyedCount = 0
-    Debug.Log("공 파괴 영역 활성화")
 end
 --endregion
 
@@ -67,8 +66,6 @@ function onTriggerEnter(other)
 
         -- 공 파괴
         GameObject.Destroy(other.gameObject)
-
-        Debug.Log(ballName .. "이(가) 바구니에 들어가 소멸되었습니다. (총 " .. destroyedCount .. "개)")
     end
 end
 --endregion

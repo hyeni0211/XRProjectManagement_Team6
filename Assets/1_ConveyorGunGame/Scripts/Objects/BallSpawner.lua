@@ -79,8 +79,6 @@ function StartSpawning()
             coroutine.yield(WaitForSeconds(spawnInterval))
         end
     end))
-
-    Debug.Log("공 스폰 시작!")
 end
 
 ---@details 공 스폰 중지
@@ -91,14 +89,12 @@ function StopSpawning()
         self:StopCoroutine(spawnRoutine)
         spawnRoutine = nil
     end
-
-    Debug.Log("공 스폰 중지")
 end
 
 ---@details 랜덤 공 생성
 function SpawnRandomBall()
     if BallPrefabs == nil or #BallPrefabs == 0 then
-        Debug.LogError("BallPrefabs 배열이 비어있습니다. 프리팹을 할당하세요.")
+        Debug.Log("[ERROR] BallPrefabs 배열이 비어있습니다. 프리팹을 할당하세요.")
         return
     end
 
@@ -107,7 +103,7 @@ function SpawnRandomBall()
     local ballPrefab = BallPrefabs[randomIndex]
 
     if ballPrefab == nil then
-        Debug.LogError("선택된 공 프리팹이 nil입니다.")
+        Debug.Log("[ERROR] 선택된 공 프리팹이 nil입니다.")
         return
     end
 
@@ -116,8 +112,6 @@ function SpawnRandomBall()
     local ball = GameObject.Instantiate(ballPrefab)
     ball.transform.position = spawnPos
     ball.transform.rotation = CS.UnityEngine.Quaternion.identity
-
-    Debug.Log("공 생성: " .. ball.name)
 end
 --endregion
 
