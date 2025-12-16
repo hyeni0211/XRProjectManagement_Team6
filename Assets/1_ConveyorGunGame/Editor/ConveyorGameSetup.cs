@@ -9,6 +9,7 @@ namespace ConveyorGunGame.Editor
     /// <summary>
     /// Conveyor Gun Game 씬 자동 설정 에디터 도구
     /// VivenLuaBehaviour Injection 자동 설정
+    /// 한글→영어 이름 변환, 공 종류별 풀링 지원
     /// </summary>
     public class ConveyorGameSetup : EditorWindow
     {
@@ -37,6 +38,65 @@ namespace ConveyorGunGame.Editor
         // 풀 설정
         private const int DEFAULT_TARGET_POOL_SIZE = 15;
         private const int DEFAULT_BULLET_POOL_SIZE = 25;
+        private const int TARGETS_PER_BALL_TYPE = 10; // 공 종류별 풀 개수
+
+        #endregion
+
+        #region Korean to English Mapping
+
+        // 한글→영어 이름 변환 딕셔너리
+        private static readonly Dictionary<string, string> KoreanToEnglishMap = new Dictionary<string, string>
+        {
+            // 공 종류
+            { "골프공", "GolfBall" },
+            { "농구공", "BasketBall" },
+            { "럭비골", "RugbyBall" },
+            { "배구공", "VolleyBall" },
+            { "볼링공", "BowlingBall" },
+            { "비치볼", "BeachBall" },
+            { "야구공", "BaseBall" },
+            { "축구공", "SoccerBall" },
+            { "테니스공", "TennisBall" },
+
+            // UI 요소
+            { "게임종료", "GameOver" },
+            { "점수", "Score" },
+            { "준비!", "Ready" },
+
+            // 추가 UI (필요 시)
+            { "시작", "Start" },
+            { "재시작", "Restart" },
+            { "타이머", "Timer" },
+            { "메시지", "Message" }
+        };
+
+        // 공 종류 목록 (영어)
+        private static readonly string[] BallTypes = new string[]
+        {
+            "GolfBall",
+            "BasketBall",
+            "RugbyBall",
+            "VolleyBall",
+            "BowlingBall",
+            "BeachBall",
+            "BaseBall",
+            "SoccerBall",
+            "TennisBall"
+        };
+
+        // 공 종류 한글 목록
+        private static readonly string[] BallTypesKorean = new string[]
+        {
+            "골프공",
+            "농구공",
+            "럭비골",
+            "배구공",
+            "볼링공",
+            "비치볼",
+            "야구공",
+            "축구공",
+            "테니스공"
+        };
 
         #endregion
 
@@ -44,13 +104,15 @@ namespace ConveyorGunGame.Editor
 
         private int targetPoolSize = DEFAULT_TARGET_POOL_SIZE;
         private int bulletPoolSize = DEFAULT_BULLET_POOL_SIZE;
+        private int targetsPerBallType = TARGETS_PER_BALL_TYPE;
         private Vector2 scrollPosition;
+        private bool showBallTypeStatus = true;
 
         [MenuItem(MENU_PATH + "/Setup Scene")]
         public static void ShowWindow()
         {
             var window = GetWindow<ConveyorGameSetup>("Conveyor Game Setup");
-            window.minSize = new Vector2(400, 500);
+            window.minSize = new Vector2(450, 700);
         }
 
         private void OnGUI()
@@ -60,47 +122,70 @@ namespace ConveyorGunGame.Editor
             GUILayout.Label("Conveyor Gun Game Setup", EditorStyles.boldLabel);
             EditorGUILayout.Space(10);
 
-            // 풀 크기 설정
+            // === 한글 이름 변환 섹션 ===
+            GUI.backgroundColor = new Color(1f, 0.9f, 0.7f);
+            EditorGUILayout.BeginVertical("box");
+            GUI.backgroundColor = Color.white;
+            GUILayout.Label("🔤 Korean → English Name Converter", EditorStyles.boldLabel);
+
+            if (GUILayout.Button("Rename All Korean Objects to English", GUILayout.Height(30)))
+            {
+                RenameKoreanToEnglish();
+            }
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.Space(10);
+
+            // === 풀 크기 설정 ===
             GUILayout.Label("Pool Settings", EditorStyles.boldLabel);
-            targetPoolSize = EditorGUILayout.IntSlider("Target Pool Size", targetPoolSize, 5, 30);
+            targetsPerBallType = EditorGUILayout.IntSlider("Targets Per Ball Type", targetsPerBallType, 5, 20);
+            EditorGUILayout.LabelField($"  → Total Targets: {targetsPerBallType * BallTypes.Length} (9 types × {targetsPerBallType})");
             bulletPoolSize = EditorGUILayout.IntSlider("Bullet Pool Size", bulletPoolSize, 10, 50);
             EditorGUILayout.Space(10);
 
-            // 상태 확인
+            // === 상태 확인 ===
             GUILayout.Label("Current Status", EditorStyles.boldLabel);
             DrawStatusCheck();
+            EditorGUILayout.Space(5);
+
+            // 공 종류별 상태
+            showBallTypeStatus = EditorGUILayout.Foldout(showBallTypeStatus, "Ball Type Pool Status");
+            if (showBallTypeStatus)
+            {
+                DrawBallTypeStatus();
+            }
             EditorGUILayout.Space(10);
 
-            // 설정 버튼
+            // === 설정 버튼 ===
             GUILayout.Label("Setup Actions", EditorStyles.boldLabel);
 
-            if (GUILayout.Button("1. Create Manager Objects", GUILayout.Height(30)))
+            if (GUILayout.Button("1. Create Manager Objects", GUILayout.Height(25)))
             {
                 CreateManagerObjects();
             }
 
-            if (GUILayout.Button("2. Create Target Pool", GUILayout.Height(30)))
+            if (GUILayout.Button("2. Create Target Pool (By Ball Type)", GUILayout.Height(25)))
             {
-                CreateTargetPool(targetPoolSize);
+                CreateTargetPoolByBallType(targetsPerBallType);
             }
 
-            if (GUILayout.Button("3. Create Bullet Pool", GUILayout.Height(30)))
+            if (GUILayout.Button("3. Create Bullet Pool", GUILayout.Height(25)))
             {
                 CreateBulletPool(bulletPoolSize);
             }
 
-            if (GUILayout.Button("4. Setup Gun (ShootingGun.lua)", GUILayout.Height(30)))
+            if (GUILayout.Button("4. Setup Gun (ShootingGun.lua)", GUILayout.Height(25)))
             {
                 SetupGun();
             }
 
-            if (GUILayout.Button("5. Setup All Injections", GUILayout.Height(30)))
+            if (GUILayout.Button("5. Setup All Injections", GUILayout.Height(25)))
             {
                 SetupAllInjections();
             }
 
             EditorGUILayout.Space(20);
 
+            // === AUTO SETUP ALL ===
             GUI.backgroundColor = Color.green;
             if (GUILayout.Button("AUTO SETUP ALL", GUILayout.Height(50)))
             {
@@ -110,14 +195,74 @@ namespace ConveyorGunGame.Editor
 
             EditorGUILayout.Space(10);
 
+            // === 유틸리티 버튼 ===
             GUI.backgroundColor = Color.yellow;
             if (GUILayout.Button("Fix Null Injection Arrays", GUILayout.Height(25)))
             {
                 FixAllNullInjectionArrays();
             }
+
+            if (GUILayout.Button("Find & Setup UI Elements (GameCanvas)", GUILayout.Height(25)))
+            {
+                SetupUIElements();
+            }
             GUI.backgroundColor = Color.white;
 
             EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawBallTypeStatus()
+        {
+            EditorGUILayout.BeginVertical("box");
+
+            GameObject targetPool = GameObject.Find(TARGET_POOL_NAME);
+            if (targetPool == null)
+            {
+                EditorGUILayout.LabelField("  TargetPool not found");
+            }
+            else
+            {
+                // 각 공 종류별 개수 세기
+                Dictionary<string, int> ballCounts = new Dictionary<string, int>();
+                foreach (var ballType in BallTypes)
+                {
+                    ballCounts[ballType] = 0;
+                }
+                ballCounts["Unknown"] = 0;
+
+                for (int i = 0; i < targetPool.transform.childCount; i++)
+                {
+                    string childName = targetPool.transform.GetChild(i).name;
+                    bool found = false;
+
+                    foreach (var ballType in BallTypes)
+                    {
+                        if (childName.StartsWith(ballType))
+                        {
+                            ballCounts[ballType]++;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) ballCounts["Unknown"]++;
+                }
+
+                // 표시
+                foreach (var ballType in BallTypes)
+                {
+                    int count = ballCounts[ballType];
+                    string status = count >= targetsPerBallType ? "✓" : "✗";
+                    EditorGUILayout.LabelField($"  {status} {ballType}: {count}/{targetsPerBallType}");
+                }
+
+                if (ballCounts["Unknown"] > 0)
+                {
+                    EditorGUILayout.LabelField($"  ? Unknown: {ballCounts["Unknown"]}");
+                }
+            }
+
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawStatusCheck()
@@ -208,20 +353,26 @@ namespace ConveyorGunGame.Editor
         {
             Debug.Log("=== Conveyor Gun Game Auto Setup Started ===");
 
+            // 0. 한글 이름을 영어로 변환
+            RenameKoreanToEnglish();
+
             // 1. 매니저 오브젝트 생성
             CreateManagerObjects();
 
-            // 2. 풀 생성
-            CreateTargetPool(DEFAULT_TARGET_POOL_SIZE);
+            // 2. 공 종류별 풀 생성 (9종 x 10개 = 90개)
+            CreateTargetPoolByBallType(TARGETS_PER_BALL_TYPE);
             CreateBulletPool(DEFAULT_BULLET_POOL_SIZE);
 
             // 3. 총 설정
             SetupGun();
 
-            // 4. 모든 Injection 설정
+            // 4. UI 요소 설정
+            SetupUIElements();
+
+            // 5. 모든 Injection 설정
             SetupAllInjections();
 
-            // 5. Null 배열 수정
+            // 6. Null 배열 수정
             FixAllNullInjectionArrays();
 
             // 씬 변경 표시
@@ -229,7 +380,129 @@ namespace ConveyorGunGame.Editor
 
             Debug.Log("=== Conveyor Gun Game Auto Setup Completed ===");
             EditorUtility.DisplayDialog("Setup Complete",
-                "Conveyor Gun Game setup completed!\n\nPlease save the scene (Ctrl+S).", "OK");
+                "Conveyor Gun Game setup completed!\n\n" +
+                "- Korean names converted to English\n" +
+                "- Ball type pools created (9 types × 10 each)\n" +
+                "- UI elements configured\n\n" +
+                "Please save the scene (Ctrl+S).", "OK");
+        }
+
+        #endregion
+
+        #region Korean to English Rename
+
+        /// <summary>
+        /// 씬 내 모든 한글 오브젝트 이름을 영어로 변환
+        /// </summary>
+        public static void RenameKoreanToEnglish()
+        {
+            Debug.Log("=== Renaming Korean objects to English ===");
+
+            int renamedCount = 0;
+            var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+            foreach (var obj in allObjects)
+            {
+                // 씬에 있는 오브젝트만 처리
+                if (!obj.scene.IsValid()) continue;
+
+                string originalName = obj.name;
+
+                // 한글 이름인지 확인하고 변환
+                if (KoreanToEnglishMap.TryGetValue(originalName, out string englishName))
+                {
+                    obj.name = englishName;
+                    Debug.Log($"Renamed: '{originalName}' → '{englishName}'");
+                    EditorUtility.SetDirty(obj);
+                    renamedCount++;
+                }
+            }
+
+            Debug.Log($"=== Renamed {renamedCount} objects ===");
+        }
+
+        /// <summary>
+        /// 오브젝트 이름을 한글에서 영어로 변환 (필요시)
+        /// </summary>
+        private static string ConvertKoreanToEnglish(string koreanName)
+        {
+            if (KoreanToEnglishMap.TryGetValue(koreanName, out string englishName))
+            {
+                return englishName;
+            }
+            return koreanName;
+        }
+
+        /// <summary>
+        /// 영어 이름을 한글로 역변환 (검색용)
+        /// </summary>
+        private static string ConvertEnglishToKorean(string englishName)
+        {
+            foreach (var pair in KoreanToEnglishMap)
+            {
+                if (pair.Value == englishName)
+                {
+                    return pair.Key;
+                }
+            }
+            return englishName;
+        }
+
+        #endregion
+
+        #region UI Elements Setup
+
+        /// <summary>
+        /// GameCanvas 내 UI 요소들을 찾아서 설정
+        /// </summary>
+        public static void SetupUIElements()
+        {
+            Debug.Log("=== Setting up UI Elements ===");
+
+            GameObject gameCanvas = GameObject.Find(GAME_CANVAS_NAME);
+            if (gameCanvas == null)
+            {
+                Debug.LogWarning("GameCanvas not found!");
+                return;
+            }
+
+            // UI 요소 이름 매핑 (한글 → 영어로 검색)
+            var uiMappings = new Dictionary<string, string[]>
+            {
+                // Injection 이름 → 검색할 이름들 (영어 먼저, 한글 fallback)
+                { "ScoreTextObject", new[] { "Score", "ScoreText", "점수" } },
+                { "TimerTextObject", new[] { "Timer", "TimerText", "타이머" } },
+                { "StartUIPanel", new[] { "StartUIPanel", "StartUI", "Ready", "준비!" } },
+                { "GameUIPanel", new[] { "GameUIPanel", "GameUI" } },
+                { "GameOverUIPanel", new[] { "GameOverUIPanel", "GameOverUI", "GameOver", "게임종료" } },
+                { "StartButtonObject", new[] { "StartButton", "Start", "시작" } },
+                { "RestartButtonObject", new[] { "RestartButton", "Restart", "재시작" } },
+                { "FinalScoreTextObject", new[] { "FinalScore", "FinalScoreText" } },
+                { "GuideTextObject", new[] { "GuideText", "Guide", "가이드" } }
+            };
+
+            // 각 UI 요소 찾기
+            foreach (var mapping in uiMappings)
+            {
+                GameObject foundObj = null;
+
+                foreach (var searchName in mapping.Value)
+                {
+                    foundObj = FindChildRecursive(gameCanvas.transform, searchName);
+                    if (foundObj != null) break;
+                }
+
+                if (foundObj != null)
+                {
+                    Debug.Log($"Found UI: {mapping.Key} = '{foundObj.name}'");
+                }
+                else
+                {
+                    Debug.LogWarning($"UI not found: {mapping.Key} (searched: {string.Join(", ", mapping.Value)})");
+                }
+            }
+
+            Debug.Log("=== UI Elements setup completed ===");
         }
 
         #endregion
@@ -262,6 +535,143 @@ namespace ConveyorGunGame.Editor
             EditorUtility.SetDirty(spawnManager);
         }
 
+        /// <summary>
+        /// 공 종류별 TargetPool 생성
+        /// 씬에 있는 실제 공 오브젝트를 템플릿으로 복제
+        /// </summary>
+        public static void CreateTargetPoolByBallType(int countPerType)
+        {
+            Debug.Log("=== Creating Target Pool by Ball Type ===");
+
+            // TargetPool 부모 오브젝트
+            GameObject targetPool = GameObject.Find(TARGET_POOL_NAME);
+            if (targetPool == null)
+            {
+                targetPool = new GameObject(TARGET_POOL_NAME);
+                Debug.Log("Created: " + TARGET_POOL_NAME);
+            }
+
+            // 씬에서 각 공 종류의 템플릿 찾기
+            Dictionary<string, GameObject> ballTemplates = new Dictionary<string, GameObject>();
+
+            for (int i = 0; i < BallTypes.Length; i++)
+            {
+                string englishName = BallTypes[i];
+                string koreanName = BallTypesKorean[i];
+
+                // 영어 이름으로 먼저 찾고, 없으면 한글 이름으로 찾기
+                GameObject template = GameObject.Find(englishName);
+                if (template == null)
+                {
+                    template = GameObject.Find(koreanName);
+                }
+
+                if (template != null)
+                {
+                    ballTemplates[englishName] = template;
+                    Debug.Log($"Found template: {englishName} ({template.name})");
+                }
+                else
+                {
+                    Debug.LogWarning($"Ball template not found: {englishName} / {koreanName}");
+                }
+            }
+
+            // 각 공 종류별로 풀 오브젝트 생성
+            int totalCreated = 0;
+            foreach (var ballType in BallTypes)
+            {
+                // 이미 존재하는 해당 타입 개수 세기
+                int existingCount = 0;
+                for (int i = 0; i < targetPool.transform.childCount; i++)
+                {
+                    if (targetPool.transform.GetChild(i).name.StartsWith(ballType + "_"))
+                    {
+                        existingCount++;
+                    }
+                }
+
+                // 부족한 만큼 생성
+                int toCreate = countPerType - existingCount;
+                if (toCreate <= 0)
+                {
+                    Debug.Log($"{ballType}: Already has {existingCount} (need {countPerType})");
+                    continue;
+                }
+
+                GameObject template = null;
+                ballTemplates.TryGetValue(ballType, out template);
+
+                for (int i = 0; i < toCreate; i++)
+                {
+                    int index = existingCount + i;
+                    string objName = $"{ballType}_{index}";
+
+                    GameObject target;
+
+                    if (template != null)
+                    {
+                        // 템플릿 복제
+                        target = Object.Instantiate(template, targetPool.transform);
+                        target.name = objName;
+
+                        // 위치 초기화
+                        target.transform.localPosition = Vector3.zero;
+                        target.transform.localRotation = Quaternion.identity;
+                    }
+                    else
+                    {
+                        // 템플릿 없으면 기본 큐브 생성
+                        target = CreatePoolObject(objName, targetPool.transform);
+
+                        if (target.GetComponent<MeshFilter>() == null)
+                        {
+                            var meshFilter = target.AddComponent<MeshFilter>();
+                            meshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
+
+                            var meshRenderer = target.AddComponent<MeshRenderer>();
+                            meshRenderer.sharedMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+                        }
+
+                        target.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                    }
+
+                    // VivenLuaBehaviour 설정
+                    SetupVivenLuaBehaviour(target, TARGET_SCRIPT, "Objects");
+
+                    // 태그 설정
+                    SetOrCreateTag(target, "Target");
+
+                    // Collider 추가 (없으면)
+                    if (target.GetComponent<Collider>() == null)
+                    {
+                        var col = target.AddComponent<SphereCollider>();
+                        col.isTrigger = true;
+                        col.radius = 0.15f;
+                    }
+
+                    // 공 타입을 StringValue로 저장
+                    var luaBehaviour = target.GetComponent<VivenLuaBehaviour>();
+                    if (luaBehaviour != null)
+                    {
+                        EnsureInjectionInitialized(luaBehaviour);
+                        EnsureStringInjection(ref luaBehaviour.injection.stringValue, "ballType", ballType);
+                        EditorUtility.SetDirty(luaBehaviour);
+                    }
+
+                    totalCreated++;
+                }
+
+                Debug.Log($"{ballType}: Created {toCreate} new targets (total: {existingCount + toCreate})");
+            }
+
+            Debug.Log($"=== Target Pool Complete: {targetPool.transform.childCount} total targets ({totalCreated} new) ===");
+            EditorUtility.SetDirty(targetPool);
+        }
+
+        /// <summary>
+        /// 기존 방식의 단순 타겟 풀 생성 (fallback용)
+        /// </summary>
         public static void CreateTargetPool(int poolSize)
         {
             // TargetPool 부모 오브젝트
@@ -456,24 +866,58 @@ namespace ConveyorGunGame.Editor
             // GameObject Injections
             EnsureGameObjectInjection(ref injection.gameObjectValues, "SpawnManagerObject", spawnManager);
 
-            // UI 관련 (GameCanvas 하위에서 찾기)
+            // UI 관련 (GameCanvas 하위에서 찾기) - 영어/한글 양쪽 검색
             if (gameCanvas != null)
             {
-                GameObject scoreText = FindChildRecursive(gameCanvas.transform, "ScoreText");
-                GameObject timerText = FindChildRecursive(gameCanvas.transform, "TimerText");
-                GameObject startUIPanel = FindChildRecursive(gameCanvas.transform, "StartUIPanel");
-                GameObject gameUIPanel = FindChildRecursive(gameCanvas.transform, "GameUIPanel");
-                GameObject gameOverUIPanel = FindChildRecursive(gameCanvas.transform, "GameOverUIPanel");
-                GameObject startButton = FindChildRecursive(gameCanvas.transform, "StartButton");
-                GameObject restartButton = FindChildRecursive(gameCanvas.transform, "RestartButton");
-
+                // 점수 텍스트
+                GameObject scoreText = FindChildByMultipleNames(gameCanvas.transform, "Score", "ScoreText", "점수");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "ScoreTextObject", scoreText);
+
+                // 타이머 텍스트
+                GameObject timerText = FindChildByMultipleNames(gameCanvas.transform, "Timer", "TimerText", "타이머");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "TimerTextObject", timerText);
+
+                // 시작 UI 패널 (준비!)
+                GameObject startUIPanel = FindChildByMultipleNames(gameCanvas.transform, "StartUIPanel", "StartUI", "Ready", "준비!");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "StartUIPanel", startUIPanel);
+
+                // 게임 UI 패널
+                GameObject gameUIPanel = FindChildByMultipleNames(gameCanvas.transform, "GameUIPanel", "GameUI");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "GameUIPanel", gameUIPanel);
+
+                // 게임 오버 UI 패널
+                GameObject gameOverUIPanel = FindChildByMultipleNames(gameCanvas.transform, "GameOverUIPanel", "GameOverUI", "GameOver", "게임종료");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "GameOverUIPanel", gameOverUIPanel);
+
+                // 시작 버튼
+                GameObject startButton = FindChildByMultipleNames(gameCanvas.transform, "StartButton", "Start", "시작");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "StartButtonObject", startButton);
+
+                // 재시작 버튼
+                GameObject restartButton = FindChildByMultipleNames(gameCanvas.transform, "RestartButton", "Restart", "재시작");
                 EnsureGameObjectInjection(ref injection.gameObjectValues, "RestartButtonObject", restartButton);
+
+                // 최종 점수 텍스트
+                GameObject finalScoreText = FindChildByMultipleNames(gameCanvas.transform, "FinalScore", "FinalScoreText");
+                EnsureGameObjectInjection(ref injection.gameObjectValues, "FinalScoreTextObject", finalScoreText);
+
+                // 가이드 텍스트 (현재 맞춰야 할 공 종류 표시)
+                GameObject guideText = FindChildByMultipleNames(gameCanvas.transform, "GuideText", "Guide", "가이드", "TargetGuide");
+                EnsureGameObjectInjection(ref injection.gameObjectValues, "GuideTextObject", guideText);
+
+                // 공 종류별 가이드 텍스트 오브젝트들 (9종)
+                for (int i = 0; i < BallTypes.Length; i++)
+                {
+                    string englishName = BallTypes[i];
+                    string koreanName = BallTypesKorean[i];
+
+                    GameObject ballGuide = FindChildByMultipleNames(gameCanvas.transform, englishName, koreanName);
+                    if (ballGuide != null)
+                    {
+                        EnsureGameObjectInjection(ref injection.gameObjectValues, $"BallGuide_{englishName}", ballGuide);
+                        Debug.Log($"Found ball guide: {englishName} = {ballGuide.name}");
+                    }
+                }
             }
 
             // Float/Int Injections (기본값)
@@ -750,9 +1194,57 @@ namespace ConveyorGunGame.Editor
             return true;
         }
 
+        private static bool EnsureStringInjection(ref StringValue[] array, string name, string value)
+        {
+            if (array != null)
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (array[i].name == name)
+                    {
+                        // 값이 다르면 업데이트
+                        if (array[i].value != value)
+                        {
+                            array[i].value = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+            }
+
+            var newEntry = new StringValue { name = name, value = value };
+
+            if (array == null)
+            {
+                array = new StringValue[] { newEntry };
+            }
+            else
+            {
+                var list = new List<StringValue>(array);
+                list.Add(newEntry);
+                array = list.ToArray();
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Utility Helpers
+
+        /// <summary>
+        /// 여러 이름으로 자식 오브젝트 검색 (첫 번째 발견된 것 반환)
+        /// </summary>
+        private static GameObject FindChildByMultipleNames(Transform parent, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var found = FindChildRecursive(parent, name);
+                if (found != null) return found;
+            }
+            return null;
+        }
 
         private static GameObject FindChildRecursive(Transform parent, string name)
         {

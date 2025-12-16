@@ -28,6 +28,10 @@ GameManagerObject = NullableInject(GameManagerObject)
 ---@details 타겟 점수 값
 scoreValue = 10
 
+---@type string
+---@details 공 종류 (GolfBall, BasketBall, etc.) - 에디터에서 자동 설정
+ballType = nil
+
 --endregion
 
 --region Variables
@@ -47,6 +51,10 @@ local poolIndex = -1
 ---@type boolean
 ---@details 이미 피격됨 여부 (중복 판정 방지)
 local isHit = false
+
+---@type string
+---@details 실제 공 종류 (awake에서 이름으로부터 추출 또는 Injection에서)
+local myBallType = nil
 
 ---@type Vector3
 ---@details 스폰 위치
@@ -76,6 +84,41 @@ function awake()
 
     -- 스폰 위치 저장
     spawnPosition = self.transform.position
+
+    -- 공 종류 결정 (Injection > 이름에서 추출)
+    myBallType = ExtractBallTypeFromName()
+end
+
+---@details 오브젝트 이름에서 공 종류 추출
+---@return string 공 종류 (예: GolfBall, BasketBall)
+function ExtractBallTypeFromName()
+    -- Injection에서 먼저 확인
+    if ballType and ballType ~= "" then
+        return ballType
+    end
+
+    -- 오브젝트 이름에서 추출 (예: "GolfBall_0" -> "GolfBall")
+    local objName = self.gameObject.name
+    local ballTypes = {
+        "GolfBall",
+        "BasketBall",
+        "RugbyBall",
+        "VolleyBall",
+        "BowlingBall",
+        "BeachBall",
+        "BaseBall",
+        "SoccerBall",
+        "TennisBall"
+    }
+
+    for _, bt in ipairs(ballTypes) do
+        if string.find(objName, bt) then
+            return bt
+        end
+    end
+
+    -- 기본값
+    return "Unknown"
 end
 
 function start()
@@ -129,18 +172,21 @@ function OnHitByBullet(bulletObject)
 
     isHit = true
 
-    -- 점수 추가
+    -- 가이드 시스템: 공 종류 체크하여 점수 계산
     if gameManager then
-        gameManager.AddScore(scoreValue)
+        -- 새로운 가이드 시스템 사용
+        if gameManager.OnTargetHit then
+            local isCorrect = gameManager.OnTargetHit(myBallType)
+            Debug.Log("타겟 피격! 공 종류: " .. (myBallType or "Unknown") .. " / 정답: " .. tostring(isCorrect))
+        else
+            -- 기존 방식 (호환용)
+            gameManager.AddScore(scoreValue)
+            Debug.Log("타겟 피격! 점수: " .. scoreValue)
+        end
     end
-
-    -- 햅틱 피드백
-    PlayHitHaptic()
 
     -- 히트 이펙트 (선택적)
     PlayHitEffect()
-
-    Debug.Log("타겟 피격! 점수: " .. scoreValue)
 
     -- 풀로 반환
     ReturnToPool()
@@ -260,6 +306,18 @@ end
 ---@param manager ConveyorGameManager
 function SetGameManager(manager)
     gameManager = manager
+end
+
+---@details 공 종류 반환
+---@return string
+function GetBallType()
+    return myBallType
+end
+
+---@details 공 종류 설정
+---@param bt string 공 종류
+function SetBallType(bt)
+    myBallType = bt
 end
 
 --endregion

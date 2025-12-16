@@ -60,6 +60,21 @@ HitSoundObject = NullableInject(HitSoundObject)
 ---@details 미스 사운드 오브젝트
 MissSoundObject = NullableInject(MissSoundObject)
 
+---@type GameObject
+---@details 가이드 텍스트 오브젝트 (현재 맞춰야 할 공 종류 표시)
+GuideTextObject = NullableInject(GuideTextObject)
+
+-- 공 종류별 가이드 오브젝트들 (씬에서 자동 Injection)
+BallGuide_GolfBall = NullableInject(BallGuide_GolfBall)
+BallGuide_BasketBall = NullableInject(BallGuide_BasketBall)
+BallGuide_RugbyBall = NullableInject(BallGuide_RugbyBall)
+BallGuide_VolleyBall = NullableInject(BallGuide_VolleyBall)
+BallGuide_BowlingBall = NullableInject(BallGuide_BowlingBall)
+BallGuide_BeachBall = NullableInject(BallGuide_BeachBall)
+BallGuide_BaseBall = NullableInject(BallGuide_BaseBall)
+BallGuide_SoccerBall = NullableInject(SoccerBall)
+BallGuide_TennisBall = NullableInject(BallGuide_TennisBall)
+
 ---@type number
 ---@details 게임 시간 (초)
 gameTime = 60
@@ -142,6 +157,62 @@ local remainingTime = 0
 ---@details 게임 타이머 코루틴
 local gameTimerRoutine = nil
 
+---@type TMP_Text
+---@details 가이드 텍스트 참조
+local guideText = nil
+
+---@type string
+---@details 현재 타겟 공 종류
+local currentTargetBallType = nil
+
+---@type table
+---@details 공 종류 목록
+local BALL_TYPES = {
+    "GolfBall",
+    "BasketBall",
+    "RugbyBall",
+    "VolleyBall",
+    "BowlingBall",
+    "BeachBall",
+    "BaseBall",
+    "SoccerBall",
+    "TennisBall"
+}
+
+---@type table
+---@details 공 종류 한글 이름 (UI 표시용)
+local BALL_TYPE_NAMES = {
+    GolfBall = "골프공",
+    BasketBall = "농구공",
+    RugbyBall = "럭비공",
+    VolleyBall = "배구공",
+    BowlingBall = "볼링공",
+    BeachBall = "비치볼",
+    BaseBall = "야구공",
+    SoccerBall = "축구공",
+    TennisBall = "테니스공"
+}
+
+---@type table
+---@details 공 종류별 가이드 오브젝트 참조
+local ballGuideObjects = {}
+
+---@type number
+---@details 가이드 변경 간격 (초)
+local guideChangeInterval = 5.0
+
+---@type Coroutine
+---@details 가이드 변경 코루틴
+local guideChangeRoutine = nil
+
+---@type number
+---@details 정답 점수 (가이드에 맞는 공)
+local correctHitScore = 10
+
+---@type number
+---@details 오답 점수 (가이드와 다른 공)
+local wrongHitScore = 0
+
 --endregion
 
 --region Unity Lifecycle
@@ -182,6 +253,24 @@ function awake()
     if MissSoundObject then
         missSound = MissSoundObject:GetComponent(typeof(CS.UnityEngine.AudioSource))
     end
+
+    -- 가이드 텍스트 참조
+    if GuideTextObject then
+        guideText = GuideTextObject:GetComponent(typeof(CS.TMPro.TMP_Text))
+    end
+
+    -- 공 종류별 가이드 오브젝트 참조
+    ballGuideObjects = {
+        GolfBall = BallGuide_GolfBall,
+        BasketBall = BallGuide_BasketBall,
+        RugbyBall = BallGuide_RugbyBall,
+        VolleyBall = BallGuide_VolleyBall,
+        BowlingBall = BallGuide_BowlingBall,
+        BeachBall = BallGuide_BeachBall,
+        BaseBall = BallGuide_BaseBall,
+        SoccerBall = BallGuide_SoccerBall,
+        TennisBall = BallGuide_TennisBall
+    }
 end
 
 function start()
@@ -234,6 +323,10 @@ function StartGame()
     remainingTime = gameTime
     UpdateAllUI()
 
+    -- 첫 번째 타겟 공 종류 선택
+    SelectRandomTargetBallType()
+    StartGuideChangeRoutine()
+
     -- 스폰 매니저 초기화 및 시작
     if spawnManager then
         spawnManager:InitSpawn({
@@ -268,6 +361,9 @@ function StopGame()
 
     -- 타이머 정지
     StopGameTimer()
+
+    -- 가이드 변경 코루틴 정지
+    StopGuideChangeRoutine()
 
     -- 게임 오버 UI 표시
     ShowStartUI(false)
@@ -370,7 +466,48 @@ end
 
 --region Score
 
----@details 점수 추가 (타겟 명중)
+---@details 타겟 히트 처리 (가이드 체크 포함)
+---@param ballType string 맞춘 공의 종류
+---@return boolean 정답 여부
+function OnTargetHit(ballType)
+    if not isGameRunning then return false end
+
+    local isCorrect = (ballType == currentTargetBallType)
+
+    if isCorrect then
+        -- 정답: 가이드에 맞는 공
+        score = score + correctHitScore
+        hitCount = hitCount + 1
+        UpdateScoreUI()
+
+        -- 명중 사운드
+        PlayHitSound()
+
+        -- 강한 햅틱 피드백
+        XR.StartControllerVibration(false, 0.5, 0.1)
+        XR.StartControllerVibration(true, 0.5, 0.1)
+
+        Debug.Log("정답! +" .. correctHitScore .. " (" .. ballType .. " = " .. currentTargetBallType .. ")")
+    else
+        -- 오답: 가이드와 다른 공
+        score = score + wrongHitScore
+        missCount = missCount + 1
+        UpdateScoreUI()
+
+        -- 미스 사운드
+        PlayMissSound()
+
+        -- 약한 햅틱 피드백
+        XR.StartControllerVibration(false, 0.2, 0.05)
+        XR.StartControllerVibration(true, 0.2, 0.05)
+
+        Debug.Log("오답! +" .. wrongHitScore .. " (" .. ballType .. " ≠ " .. currentTargetBallType .. ")")
+    end
+
+    return isCorrect
+end
+
+---@details 점수 추가 (기존 방식, 호환용)
 ---@param points number 추가할 점수
 function AddScore(points)
     if not isGameRunning then return end
@@ -585,6 +722,92 @@ end
 ---@return boolean
 function IsGamePaused()
     return isGamePaused
+end
+
+--endregion
+
+--region Guide System
+
+---@details 랜덤으로 타겟 공 종류 선택
+function SelectRandomTargetBallType()
+    local randomIndex = math.random(1, #BALL_TYPES)
+    currentTargetBallType = BALL_TYPES[randomIndex]
+
+    -- 가이드 UI 업데이트
+    UpdateGuideUI()
+
+    Debug.Log("새 타겟 공 종류: " .. currentTargetBallType .. " (" .. (BALL_TYPE_NAMES[currentTargetBallType] or currentTargetBallType) .. ")")
+end
+
+---@details 가이드 UI 업데이트
+function UpdateGuideUI()
+    -- 가이드 텍스트 업데이트
+    if guideText and currentTargetBallType then
+        local displayName = BALL_TYPE_NAMES[currentTargetBallType] or currentTargetBallType
+        guideText.text = displayName
+    end
+
+    -- 모든 공 가이드 오브젝트 비활성화 후 현재 타겟만 활성화
+    for ballType, guideObj in pairs(ballGuideObjects) do
+        if guideObj then
+            local shouldShow = (ballType == currentTargetBallType)
+            guideObj:SetActive(shouldShow)
+        end
+    end
+end
+
+---@details 가이드 변경 코루틴 시작
+function StartGuideChangeRoutine()
+    StopGuideChangeRoutine()
+
+    guideChangeRoutine = self:StartCoroutine(util.cs_generator(function()
+        while isGameRunning do
+            coroutine.yield(WaitForSeconds(guideChangeInterval))
+
+            if isGameRunning and not isGamePaused then
+                SelectRandomTargetBallType()
+
+                -- 가이드 변경 시 약한 햅틱 피드백
+                XR.StartControllerVibration(false, 0.15, 0.05)
+                XR.StartControllerVibration(true, 0.15, 0.05)
+            end
+        end
+    end))
+end
+
+---@details 가이드 변경 코루틴 정지
+function StopGuideChangeRoutine()
+    if guideChangeRoutine then
+        self:StopCoroutine(guideChangeRoutine)
+        guideChangeRoutine = nil
+    end
+end
+
+---@details 현재 타겟 공 종류 반환
+---@return string
+function GetCurrentTargetBallType()
+    return currentTargetBallType
+end
+
+---@details 공 종류가 현재 타겟과 일치하는지 확인
+---@param ballType string 확인할 공 종류
+---@return boolean
+function IsCorrectBallType(ballType)
+    return ballType == currentTargetBallType
+end
+
+---@details 가이드 변경 간격 설정
+---@param interval number 간격 (초)
+function SetGuideChangeInterval(interval)
+    guideChangeInterval = interval
+end
+
+---@details 정답/오답 점수 설정
+---@param correct number 정답 점수
+---@param wrong number 오답 점수
+function SetHitScores(correct, wrong)
+    correctHitScore = correct
+    wrongHitScore = wrong
 end
 
 --endregion
