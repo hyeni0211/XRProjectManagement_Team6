@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetSettings
-  m_DefaultGroup: 006950667ea74284793f3b1f91a9fbe1
+  m_DefaultGroup: f3d592127aa95d14aafea1e0899029f0
   m_currentHash:
     serializedVersion: 2
-    Hash: 63b2be03fee9b98589dba38d06d72ef2
+    Hash: e9b115a7b1327e319f612a302cbc6945
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -47,10 +47,10 @@ MonoBehaviour:
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
   m_BuiltInBundleNaming: 2
-  mBuiltInBundleCustomNaming: 36500a33-2b3d-494d-ba98-780ce15293fd
+  mBuiltInBundleCustomNaming: 3b99e14f-a9dd-4a2f-ac40-a00a0d44fbe5
   m_MonoScriptBundleNaming: 2
   m_CheckForContentUpdateRestrictionsOption: 0
-  m_MonoScriptBundleCustomNaming: 36500a33-2b3d-494d-ba98-780ce15293fd
+  m_MonoScriptBundleCustomNaming: 3b99e14f-a9dd-4a2f-ac40-a00a0d44fbe5
   m_RemoteCatalogBuildPath:
     m_Id: 9b8569c255a80a24c885614668d20bd1
   m_RemoteCatalogLoadPath:
@@ -80,7 +80,7 @@ MonoBehaviour:
       - m_Id: 83388cc29a287cb4887862a0461cb89e
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
       - m_Id: 9b8569c255a80a24c885614668d20bd1
-        m_Value: 'ServerData/1074f70e-f8a8-490a-9b74-a66ed8f327fd/Pingpong/[BuildTarget]'
+        m_Value: 'ServerData/15e29890-14e0-4bd0-9470-124fbc806e8d/Pingpong/[BuildTarget]'
     m_ProfileEntryNames:
     - m_Id: 0a0908142fea28e43b49a9647402c73b
       m_Name: Local.LoadPath
