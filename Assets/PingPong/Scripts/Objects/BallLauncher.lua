@@ -46,7 +46,7 @@ local machineSpeed = 2.0
 
 ---@type number
 ---@details 기계 이동 범위 (좌우)
-local moveRange = 3.0
+local moveRange = 2.0
 
 ---@type boolean
 ---@details 발사 중 여부

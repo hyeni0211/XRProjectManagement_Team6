@@ -118,6 +118,10 @@ local isInitialized = false
 ---@details 총알 발사 시간 기록 {poolIndex = fireTime}
 local bulletFireTimes = {}
 
+---@type table
+---@details 총의 Collider 배열
+local gunColliders = {}
+
 --endregion
 
 --region Unity Lifecycle
@@ -138,6 +142,14 @@ function awake()
 
     -- 숨김 위치
     HIDE_POSITION = Vector3(0, -9999, 0)
+
+    -- 총의 Collider 수집
+    local colliders = self:GetComponentsInChildren(typeof(CS.UnityEngine.Collider))
+    if colliders and colliders.Length > 0 then
+        for i = 0, colliders.Length - 1 do
+            gunColliders[#gunColliders + 1] = colliders[i]
+        end
+    end
 
     -- 총알 풀 초기화
     InitializeBulletPool()
@@ -361,8 +373,9 @@ function Shoot()
     end
 
     -- 총알 위치 및 방향 설정
-    local shootPos = ShootPoint.transform.position
     local shootDir = ShootPoint.transform:TransformDirection(Vector3.forward)
+    -- ShootPoint보다 약간 앞에서 발사 (총 Collider 밖으로)
+    local shootPos = ShootPoint.transform.position + shootDir * 0.15
 
     -- 총알 위치/회전 설정
     bulletObj.transform.position = shootPos
@@ -370,6 +383,9 @@ function Shoot()
 
     -- 총알 활성화
     SetBulletVisible(poolIndex, true)
+
+    -- 총과 총알 간 물리 충돌 무시
+    IgnoreGunCollision(bulletObj)
 
     -- 발사 시간 기록 (자동 반환용)
     bulletFireTimes[poolIndex] = Time.time
@@ -526,6 +542,20 @@ function ReturnBulletToPool(poolIndex)
 
     -- 비활성화
     SetBulletVisible(poolIndex, false)
+end
+
+---@details 총알과 총 간 물리 충돌 무시
+---@param bulletObj GameObject 총알 오브젝트
+function IgnoreGunCollision(bulletObj)
+    local bulletCollider = bulletObj:GetComponent(typeof(CS.UnityEngine.Collider))
+    if not bulletCollider then return end
+
+    -- 총의 모든 Collider와 총알 Collider 간 충돌 무시
+    for _, gunCol in ipairs(gunColliders) do
+        if gunCol then
+            CS.UnityEngine.Physics.IgnoreCollision(bulletCollider, gunCol, true)
+        end
+    end
 end
 
 --endregion
